@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'; import * as dotenv from 'dotenv';
-dotenv.config();
-console.log('REDIS_URL in test-db:', process.env.REDIS_URL || 'Not found');
+import { PrismaClient } from '@prisma/client';
+console.log('REDIS_URL:', process.env.REDIS_URL);
 const prisma = new PrismaClient();
 async function testDb() {
     try {

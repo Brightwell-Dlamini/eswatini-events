@@ -401,7 +401,7 @@ model Session {
   ipAddress   String?
   userAgent   String?
   lastActive  DateTime      @default(now())
-  expiresAt   DateTime
+  expiresAt   DateTime?
   createdAt   DateTime      @default(now())
   deviceType  String? // 'mobile', 'desktop', 'pwa'
   offlineData Json? // For PWA offline syncing
@@ -1987,14 +1987,13 @@ model AuditLog {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   action     String // Added ticket purchases, failed logins
   entityType String
-  entityId   String
+  entityId   String?
   metadata   Json?
   ipAddress  String?
   userAgent  String?
   location   Json?
   deviceInfo Json?
   createdAt  DateTime @default(now())
-
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String? @db.ObjectId
 
