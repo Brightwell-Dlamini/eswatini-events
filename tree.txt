@@ -1,0 +1,154 @@
+.
+|-- README.md
+|-- eslint.config.mjs
+|-- next-env.d.ts
+|-- next.config.ts
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.mjs
+|-- prisma
+|   |-- schema.prisma
+|   `-- seed.ts
+|-- public
+|   |-- assets
+|   |   |-- fonts
+|   |   |-- icons
+|   |   |   |-- icon-128x128.png
+|   |   |   |-- icon-144x144.png
+|   |   |   |-- icon-152x152.png
+|   |   |   |-- icon-192x192.png
+|   |   |   |-- icon-384x384.png
+|   |   |   |-- icon-512x512..png
+|   |   |   |-- icon-72x72.png
+|   |   |   `-- icon-96x96.png
+|   |   `-- images
+|   |-- file.svg
+|   |-- globe.svg
+|   |-- locales
+|   |-- manifest.json
+|   |-- next.svg
+|   |-- robots.txt
+|   |-- sw.js
+|   |-- vercel.svg
+|   `-- window.svg
+|-- src
+|   |-- _middleware.disabled.ts
+|   |-- app
+|   |   |-- api
+|   |   |   |-- auth
+|   |   |   |   |-- biometric
+|   |   |   |   |   `-- route.ts
+|   |   |   |   |-- password
+|   |   |   |   |   `-- reset
+|   |   |   |   |       `-- route.ts
+|   |   |   |   |-- register
+|   |   |   |   |   `-- route.ts
+|   |   |   |   |-- signin
+|   |   |   |   `-- ussd
+|   |   |   |       `-- route.ts
+|   |   |   `-- health
+|   |   |       |-- live
+|   |   |       |   `-- route.ts
+|   |   |       `-- ready
+|   |   |           `-- route.ts
+|   |   |-- favicon.ico
+|   |   |-- globals.css
+|   |   |-- layout.tsx
+|   |   |-- middleware
+|   |   |   `-- auth.ts
+|   |   `-- page.tsx
+|   |-- auth
+|   |   |-- forgot-password
+|   |   |   `-- page.tsx
+|   |   |-- login
+|   |   |   |-- middleware.ts
+|   |   |   `-- page.tsx
+|   |   `-- register
+|   |       |-- attendee
+|   |       |   `-- page.tsx
+|   |       |-- community
+|   |       |   `-- page.tsx
+|   |       |-- gate_operator
+|   |       |   `-- page.tsx
+|   |       |-- government
+|   |       |   `-- page.tsx
+|   |       |-- organizer
+|   |       |   `-- page.tsx
+|   |       |-- performer
+|   |       |   `-- page.tsx
+|   |       |-- sponsor
+|   |       |   `-- page.tsx
+|   |       |-- super_admin
+|   |       |   `-- page.tsx
+|   |       |-- support_agent
+|   |       |   `-- page.tsx
+|   |       |-- vendor
+|   |       |   `-- page.tsx
+|   |       `-- venue_manager
+|   |           `-- page.tsx
+|   |-- auth.ts
+|   |-- components
+|   |   `-- auth
+|   |       |-- device-verification.tsx
+|   |       |-- mfa-setup.tsx
+|   |       `-- register-form.tsx
+|   |-- generated
+|   |   `-- prisma
+|   |       |-- client.d.ts
+|   |       |-- client.js
+|   |       |-- default.d.ts
+|   |       |-- default.js
+|   |       |-- edge.d.ts
+|   |       |-- edge.js
+|   |       |-- index-browser.js
+|   |       |-- index.d.ts
+|   |       |-- index.js
+|   |       |-- package.json
+|   |       |-- query_engine-windows.dll.node
+|   |       |-- runtime
+|   |       |   |-- edge-esm.js
+|   |       |   |-- edge.js
+|   |       |   |-- index-browser.d.ts
+|   |       |   |-- index-browser.js
+|   |       |   |-- library.d.ts
+|   |       |   |-- library.js
+|   |       |   |-- react-native.js
+|   |       |   |-- wasm-compiler-edge.js
+|   |       |   `-- wasm-engine-edge.js
+|   |       |-- schema.prisma
+|   |       |-- wasm.d.ts
+|   |       `-- wasm.js
+|   |-- hooks
+|   |   `-- use-session.ts
+|   |-- lib
+|   |   |-- auth
+|   |   |   |-- attestation.ts
+|   |   |   |-- audit.ts
+|   |   |   |-- backup-codes.ts
+|   |   |   |-- biometric.ts
+|   |   |   |-- crypto.ts
+|   |   |   |-- device.ts
+|   |   |   |-- events.ts
+|   |   |   |-- mfa.ts
+|   |   |   |-- offline-queue.ts
+|   |   |   |-- otp.ts
+|   |   |   |-- rate-limiting.ts
+|   |   |   |-- rbac.ts
+|   |   |   |-- session-invalidation.ts
+|   |   |   |-- session.ts
+|   |   |   |-- tokens.ts
+|   |   |   |-- vendor-keys.ts
+|   |   |   `-- verification.ts
+|   |   |-- email
+|   |   |   `-- index.ts
+|   |   |-- models
+|   |   |   `-- audit.ts
+|   |   |-- prisma.ts
+|   |   `-- sms
+|   |       `-- index.ts
+|   `-- types
+|       `-- next-auth.d.ts
+|-- tree.txt
+`-- tsconfig.json
+
+48 directories, 103 files
