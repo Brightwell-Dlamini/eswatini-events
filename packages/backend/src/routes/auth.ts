@@ -25,7 +25,10 @@ const registerSchema = z.object({
     phone: z.string().optional(),
     password: z.string().min(8),
     landingPage: z.string()
-}).refine((data) => data.email || data.phone, { message: 'Email or phone required' });
+}).refine((data) => data.email || data.phone,
+    {
+        message: 'Email or phone required'
+    });
 
 const roleMap: Record<string, UserRole> = {
     'organizer': UserRole.ORGANIZER,
@@ -56,17 +59,26 @@ router.post('/register', async (req: Request, res: Response) => {
                 signupMethod: email && phone ? 'EMAIL_PHONE' : email ? 'EMAIL_ONLY' : 'PHONE_ONLY'
             }
         });
-
+        // Create session and store in Redis
         const token = jwt.sign({ userId: user.id, role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
         await prisma.session.create({
-            data: { userId: user.id, token, platform: 'WEB', expiresAt: new Date(Date.now() + 3600000) }
+            data:
+            {
+                userId: user.id,
+                token, platform: 'WEB',
+                expiresAt: new Date(Date.now() + 3600000)
+            }
         });
-        await redis.setEx(`session:${user.id}`, 3600, token); // Store in Redis for 1 hour
 
+        await redis.setEx(`session:${token}`, 3600, user.id); // Store in Redis for 1 hour
         await prisma.auditLog.create({
-            data: { userId: user.id, action: 'REGISTER', entityType: 'USER', entityId: user.id }
+            data: {
+                userId: user.id,
+                action: 'REGISTER',
+                entityType: 'USER',
+                entityId: user.id
+            }
         });
-
         res.json({ token, user: { id: user.id, email, phone, role } });
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });
@@ -80,21 +92,18 @@ router.post('/login', async (req: Request, res: Response) => {
             phone: z.string().optional(),
             password: z.string()
         }).refine((data) => data.email || data.phone, { message: 'Email or phone required' }).parse(req.body);
-
         const user = await prisma.user.findFirst({
             where: { OR: [{ email: email ?? undefined }, { phone: phone ?? undefined }] }
         });
-
         if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-
         const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
         await prisma.session.create({
             data: { userId: user.id, token, platform: 'WEB', expiresAt: new Date(Date.now() + 3600000) }
         });
-        await redis.setEx(`session:${user.id}`, 3600, token); // Store in Redis
-
+        // Store session in Redis
+        await redis.setEx(`session:${token}`, 3600, user.id);
         await prisma.auditLog.create({
             data: { userId: user.id, action: 'LOGIN', entityType: 'USER', entityId: user.id }
         });
