@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../lib/db';
+import { redis } from '../lib/redis';
 
-const prisma = new PrismaClient();
 const router = Router();
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -32,15 +32,16 @@ router.get('/google/callback', async (req, res) => {
                     email: data.email!,
                     role: 'ATTENDEE',
                     signupMethod: 'SOCIAL',
-                    password: '' // No password for social login
+                    password: ''
                 }
             });
         }
 
         const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
         await prisma.session.create({
-            data: { userId: user.id, token, platform: 'WEB', expiresAt: new Date(Date.now() + 3600000) } // 1 hour expiry
+            data: { userId: user.id, token, platform: 'WEB', expiresAt: new Date(Date.now() + 3600000) }
         });
+        await redis.setEx(`session:${token}`, 3600, user.id);
 
         await prisma.auditLog.create({
             data: { userId: user.id, action: 'LOGIN', entityType: 'USER', entityId: user.id }
