@@ -5,6 +5,7 @@ import { rateLimit } from 'express-rate-limit';
 import { router as authRouter } from './routes/auth';
 import { router as googleAuthRouter } from './routes/auth.google';
 import { router as eventRouter } from './routes/events';
+import { router as ticketRouter } from './routes/tickets';
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 app.use('/auth', authRouter);
 app.use('/auth', googleAuthRouter);
 app.use('/events', eventRouter);
+app.use('/tickets', ticketRouter);
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
