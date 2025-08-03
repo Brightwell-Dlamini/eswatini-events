@@ -159,10 +159,13 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Update event (ORGANIZER only)
+
+// Update event (ORGANIZER only) - Partial updates allowed
+// Update event (ORGANIZER only) - Partial updates allowed
 router.put('/:id', requireRole([UserRole.ORGANIZER]), async (req: Request & { user?: { userId: string } }, res: Response) => {
     try {
-        const eventData = eventSchema.parse(req.body);
+        const partialEventSchema = eventSchema.partial();
+        const eventData = partialEventSchema.parse(req.body);
         const eventId = req.params.id;
 
         // Verify event exists and user is the organizer
@@ -179,30 +182,54 @@ router.put('/:id', requireRole([UserRole.ORGANIZER]), async (req: Request & { us
             return res.status(403).json({ error: 'Not authorized' });
         }
 
+        // Define type for update data
+        type EventUpdateData = {
+            updatedAt: Date;
+            name?: string;
+            slug?: string;
+            description?: string;
+            startTime?: Date;
+            endTime?: Date | null;
+            address?: string;
+            city?: string;
+            coordinates?: { lat: number; lng: number };
+            type?: EventType;
+            status?: EventStatus;
+            imageUrl?: string;
+            coverImage?: string;
+            capacity?: number;
+            ageRestriction?: number;
+            socialLinks?: string[];
+            hashtags?: string[];
+        };
+
+        // Prepare update data - only include fields that were actually provided
+        const updateData: EventUpdateData = {
+            updatedAt: new Date()
+        };
+
+        if (eventData.name !== undefined) {
+            updateData.name = eventData.name;
+            updateData.slug = slugify(eventData.name, { lower: true, strict: true });
+        }
+        if (eventData.description !== undefined) updateData.description = eventData.description;
+        if (eventData.startTime !== undefined) updateData.startTime = new Date(eventData.startTime);
+        if (eventData.endTime !== undefined) updateData.endTime = eventData.endTime ? new Date(eventData.endTime) : null;
+        if (eventData.address !== undefined) updateData.address = eventData.address;
+        if (eventData.city !== undefined) updateData.city = eventData.city;
+        if (eventData.coordinates !== undefined) updateData.coordinates = eventData.coordinates;
+        if (eventData.type !== undefined) updateData.type = eventData.type;
+        if (eventData.status !== undefined) updateData.status = eventData.status;
+        if (eventData.imageUrl !== undefined) updateData.imageUrl = eventData.imageUrl;
+        if (eventData.coverImage !== undefined) updateData.coverImage = eventData.coverImage;
+        if (eventData.capacity !== undefined) updateData.capacity = eventData.capacity;
+        if (eventData.ageRestriction !== undefined) updateData.ageRestriction = eventData.ageRestriction;
+        if (eventData.socialLinks !== undefined) updateData.socialLinks = eventData.socialLinks;
+        if (eventData.hashtags !== undefined) updateData.hashtags = eventData.hashtags;
+
         const updatedEvent = await prisma.event.update({
             where: { id: eventId },
-            data: {
-                name: eventData.name,
-                description: eventData.description,
-                startTime: new Date(eventData.startTime),
-                endTime: eventData.endTime ? new Date(eventData.endTime) : null,
-                address: eventData.address,
-                city: eventData.city,
-                country: eventData.country,
-                coordinates: eventData.coordinates,
-                type: eventData.type,
-                status: eventData.status,
-                isOnline: eventData.isOnline,
-                allowRefunds: eventData.allowRefunds,
-                refundPolicy: eventData.refundPolicy,
-                imageUrl: eventData.imageUrl,
-                coverImage: eventData.coverImage,
-                capacity: eventData.capacity,
-                ageRestriction: eventData.ageRestriction,
-                socialLinks: eventData.socialLinks,
-                hashtags: eventData.hashtags,
-                updatedAt: new Date()
-            }
+            data: updateData
         });
 
         res.json(updatedEvent);
