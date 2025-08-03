@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+  EC2_KEY: ${{ secrets.EC2_KEY }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install dependencies
+        run: cd packages/backend && yarn install --frozen-lockfile
+      - name: Run tests
+        run: cd packages/backend && yarn test
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ env.GOOGLE_CLIENT_SECRET }}
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ env.EC2_HOST }}
+          EC2_USER: ec2-user
+          EC2_KEY: ${{ env.EC2_KEY }}
+          DEPLOY_ENV: |
+            DATABASE_URL=${{ env.DATABASE_URL }}
+            REDIS_URL=${{ env.REDIS_URL }}
+            JWT_SECRET=${{ env.JWT_SECRET }}
+            PORT=4000
+            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+        run: |
+          echo "$EC2_KEY" > key.pem
+          chmod 400 key.pem
+          ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} << 'EOF'
+            cd ~/event-management-system
+            git pull origin main
+            cd packages/backend
+            yarn install --production
+            echo "$DEPLOY_ENV" > .env
+            pm2 restart backend || pm2 start yarn --name backend -- start
+          EOF
