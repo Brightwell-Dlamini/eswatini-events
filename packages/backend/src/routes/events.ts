@@ -3,8 +3,9 @@ import { PrismaClient, UserRole, EventStatus, EventType, RefundPolicy } from '@p
 import { z } from 'zod';
 import { requireRole } from './auth';
 import slugify from 'slugify';
+import { prisma } from '../lib/db';
 
-const prisma = new PrismaClient();
+
 const router = Router();
 
 const eventSchema = z.object({

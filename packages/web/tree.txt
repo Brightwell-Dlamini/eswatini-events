@@ -1,0 +1,92 @@
+.
+|-- README.md
+|-- eslint.config.mjs
+|-- next-env.d.ts
+|-- next.config.ts
+|-- package.json
+|-- postcss.config.mjs
+|-- public
+|   |-- file.svg
+|   |-- globe.svg
+|   |-- manifest.json
+|   |-- next.svg
+|   |-- sw.js
+|   |-- vercel.svg
+|   `-- window.svg
+|-- src
+|   |-- app
+|   |   |-- favicon.ico
+|   |   |-- globals.css
+|   |   |-- layout.tsx
+|   |   |-- organizer
+|   |   |   |-- analytics
+|   |   |   |   `-- page.tsx
+|   |   |   |-- dashboard
+|   |   |   |   `-- page.tsx
+|   |   |   |-- events
+|   |   |   |   |-- [id]
+|   |   |   |   |   `-- page.tsx
+|   |   |   |   |-- create
+|   |   |   |   |   `-- page.tsx
+|   |   |   |   `-- page.tsx
+|   |   |   |-- layout.tsx
+|   |   |   |-- login
+|   |   |   |   `-- page.tsx
+|   |   |   |-- marketing
+|   |   |   |   `-- page.tsx
+|   |   |   |-- page.tsx
+|   |   |   |-- register
+|   |   |   |   `-- page.tsx
+|   |   |   |-- settings
+|   |   |   |   |-- page.tsx
+|   |   |   |   `-- tickets
+|   |   |   |       `-- page.tsx
+|   |   |   |-- tickets
+|   |   |   |   |-- [id]
+|   |   |   |   |   `-- page.tsx
+|   |   |   |   |-- create
+|   |   |   |   |   `-- page.tsx
+|   |   |   |   `-- page.tsx
+|   |   |   `-- vendors
+|   |   |       |-- create
+|   |   |       |   `-- page.tsx
+|   |   |       `-- page.tsx
+|   |   |-- page.tsx
+|   |   `-- providers.tsx
+|   |-- components
+|   |   |-- organizer
+|   |   |   |-- AICopilotPanel.tsx
+|   |   |   |-- AttendeeList.tsx
+|   |   |   |-- BillingInfo.tsx
+|   |   |   |-- DynamicPricingAdjuster.tsx
+|   |   |   |-- EmailCampaignForm.tsx
+|   |   |   |-- EventCard.tsx
+|   |   |   |-- NotificationPrefs.tsx
+|   |   |   |-- ProfileEditor.tsx
+|   |   |   |-- PromoCodeForm.tsx
+|   |   |   |-- RefundCenter.tsx
+|   |   |   |-- TicketTypeCard.tsx
+|   |   |   |-- ValuePropCard.tsx
+|   |   |   `-- VendorCard.tsx
+|   |   `-- ui
+|   |       `-- loading-spinner.tsx
+|   |-- hooks
+|   |   |-- useAuth.ts
+|   |   |-- useDynamicPricing.ts
+|   |   |-- useOfflineStorage.ts
+|   |   `-- useWebSocket.ts
+|   |-- lib
+|   |   |-- api.ts
+|   |   |-- constants.ts
+|   |   |-- dummyData.ts
+|   |   `-- utils.ts
+|   |-- theme
+|   |   |-- colors.ts
+|   |   `-- styles.ts
+|   |-- theme.ts
+|   `-- types
+|       `-- schema.ts
+|-- tree.txt
+`-- tsconfig.json
+
+26 directories, 63 files

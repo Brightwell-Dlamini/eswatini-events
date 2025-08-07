@@ -5,8 +5,9 @@ import { requireRole } from './auth';
 import QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
 import { redis, safeRedisGet } from '../lib/redis';
+import { io } from '../index'; import { prisma } from '../lib/db';
 
-const prisma = new PrismaClient();
+
 const router = Router();
 
 const ticketSchema = z.object({
@@ -74,10 +75,15 @@ router.post('/:id/purchase', requireRole([UserRole.ATTENDEE]), async (req: Reque
             data: {
                 ownerId: req.user!.userId,
                 status: TicketStatus.VALID
-            }
+            }, include: { event: true }
         });
         await redis.setEx(`ticket:${ticket.ticketNumber}`, 3600 * 24, TicketStatus.VALID); // Cache for 24 hours
         res.json(updatedTicket);
+        io.to(UserRole.ORGANIZER).emit('ticketPurchased', {
+            eventId: updatedTicket.eventId,
+            ticketId: updatedTicket.id,
+            ticketNumber: updatedTicket.ticketNumber
+        }); res.json(updatedTicket);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });
     }
@@ -104,6 +110,11 @@ router.post('/:id/validate', requireRole([UserRole.GATE_OPERATOR]), async (req, 
             data: { status: TicketStatus.SCANNED }
         });
         await redis.setEx(`ticket:${ticketNumber}`, 3600 * 24, TicketStatus.SCANNED);
+        io.to(UserRole.GATE_OPERATOR).emit('ticketValidated', {
+            eventId: updatedTicket.eventId,
+            ticketId: updatedTicket.id,
+            ticketNumber: updatedTicket.ticketNumber
+        });
         res.json(updatedTicket);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });

@@ -1,154 +1,178 @@
 .
-|-- README.md
-|-- eslint.config.mjs
-|-- next-env.d.ts
-|-- next.config.ts
-|-- package-lock.json
+|-- eswatinieventskeypair.pem
 |-- package.json
-|-- postcss.config.mjs
-|-- prisma
-|   |-- schema.prisma
-|   `-- seed.ts
-|-- public
-|   |-- assets
-|   |   |-- fonts
-|   |   |-- icons
-|   |   |   |-- icon-128x128.png
-|   |   |   |-- icon-144x144.png
-|   |   |   |-- icon-152x152.png
-|   |   |   |-- icon-192x192.png
-|   |   |   |-- icon-384x384.png
-|   |   |   |-- icon-512x512..png
-|   |   |   |-- icon-72x72.png
-|   |   |   `-- icon-96x96.png
-|   |   `-- images
-|   |-- file.svg
-|   |-- globe.svg
-|   |-- locales
-|   |-- manifest.json
-|   |-- next.svg
-|   |-- robots.txt
-|   |-- sw.js
-|   |-- vercel.svg
-|   `-- window.svg
-|-- src
-|   |-- _middleware.disabled.ts
-|   |-- app
-|   |   |-- api
-|   |   |   |-- auth
-|   |   |   |   |-- biometric
-|   |   |   |   |   `-- route.ts
-|   |   |   |   |-- password
-|   |   |   |   |   `-- reset
-|   |   |   |   |       `-- route.ts
-|   |   |   |   |-- register
-|   |   |   |   |   `-- route.ts
-|   |   |   |   |-- signin
-|   |   |   |   `-- ussd
-|   |   |   |       `-- route.ts
-|   |   |   `-- health
-|   |   |       |-- live
-|   |   |       |   `-- route.ts
-|   |   |       `-- ready
-|   |   |           `-- route.ts
-|   |   |-- favicon.ico
-|   |   |-- globals.css
-|   |   |-- layout.tsx
-|   |   |-- middleware
-|   |   |   `-- auth.ts
-|   |   `-- page.tsx
-|   |-- auth
-|   |   |-- forgot-password
-|   |   |   `-- page.tsx
-|   |   |-- login
-|   |   |   |-- middleware.ts
-|   |   |   `-- page.tsx
-|   |   `-- register
-|   |       |-- attendee
-|   |       |   `-- page.tsx
-|   |       |-- community
-|   |       |   `-- page.tsx
-|   |       |-- gate_operator
-|   |       |   `-- page.tsx
-|   |       |-- government
-|   |       |   `-- page.tsx
-|   |       |-- organizer
-|   |       |   `-- page.tsx
-|   |       |-- performer
-|   |       |   `-- page.tsx
-|   |       |-- sponsor
-|   |       |   `-- page.tsx
-|   |       |-- super_admin
-|   |       |   `-- page.tsx
-|   |       |-- support_agent
-|   |       |   `-- page.tsx
-|   |       |-- vendor
-|   |       |   `-- page.tsx
-|   |       `-- venue_manager
-|   |           `-- page.tsx
-|   |-- auth.ts
-|   |-- components
-|   |   `-- auth
-|   |       |-- device-verification.tsx
-|   |       |-- mfa-setup.tsx
-|   |       `-- register-form.tsx
-|   |-- generated
-|   |   `-- prisma
-|   |       |-- client.d.ts
-|   |       |-- client.js
-|   |       |-- default.d.ts
-|   |       |-- default.js
-|   |       |-- edge.d.ts
-|   |       |-- edge.js
-|   |       |-- index-browser.js
-|   |       |-- index.d.ts
-|   |       |-- index.js
-|   |       |-- package.json
-|   |       |-- query_engine-windows.dll.node
-|   |       |-- runtime
-|   |       |   |-- edge-esm.js
-|   |       |   |-- edge.js
-|   |       |   |-- index-browser.d.ts
-|   |       |   |-- index-browser.js
-|   |       |   |-- library.d.ts
-|   |       |   |-- library.js
-|   |       |   |-- react-native.js
-|   |       |   |-- wasm-compiler-edge.js
-|   |       |   `-- wasm-engine-edge.js
-|   |       |-- schema.prisma
-|   |       |-- wasm.d.ts
-|   |       `-- wasm.js
-|   |-- hooks
-|   |   `-- use-session.ts
-|   |-- lib
-|   |   |-- auth
-|   |   |   |-- attestation.ts
-|   |   |   |-- audit.ts
-|   |   |   |-- backup-codes.ts
-|   |   |   |-- biometric.ts
-|   |   |   |-- crypto.ts
-|   |   |   |-- device.ts
-|   |   |   |-- events.ts
-|   |   |   |-- mfa.ts
-|   |   |   |-- offline-queue.ts
-|   |   |   |-- otp.ts
-|   |   |   |-- rate-limiting.ts
-|   |   |   |-- rbac.ts
-|   |   |   |-- session-invalidation.ts
-|   |   |   |-- session.ts
-|   |   |   |-- tokens.ts
-|   |   |   |-- vendor-keys.ts
-|   |   |   `-- verification.ts
-|   |   |-- email
-|   |   |   `-- index.ts
-|   |   |-- models
-|   |   |   `-- audit.ts
-|   |   |-- prisma.ts
-|   |   `-- sms
-|   |       `-- index.ts
-|   `-- types
-|       `-- next-auth.d.ts
+|-- packages
+|   |-- attendee-app
+|   |   `-- package.json
+|   |-- backend
+|   |   |-- logs
+|   |   |   |-- application-2025-08-03.log
+|   |   |   `-- application-2025-08-04.log
+|   |   |-- package.json
+|   |   |-- prisma
+|   |   |   |-- schema.md
+|   |   |   `-- schema.prisma
+|   |   |-- src
+|   |   |   |-- __tests__
+|   |   |   |   |-- auth.test.ts
+|   |   |   |   |-- setup.ts
+|   |   |   |   |-- test-db.ts
+|   |   |   |   `-- test-setup.ts
+|   |   |   |-- index.ts
+|   |   |   |-- jest.config.ts
+|   |   |   |-- lib
+|   |   |   |   |-- api.ts
+|   |   |   |   |-- db.ts
+|   |   |   |   |-- logger.ts
+|   |   |   |   `-- redis.ts
+|   |   |   |-- redis-test.ts
+|   |   |   `-- routes
+|   |   |       |-- analytics.ts
+|   |   |       |-- auth.google.ts
+|   |   |       |-- auth.ts
+|   |   |       |-- events.ts
+|   |   |       |-- payments.ts
+|   |   |       |-- ticket-types.ts
+|   |   |       |-- tickets.ts
+|   |   |       |-- users.ts
+|   |   |       `-- venues.ts
+|   |   `-- tsconfig.json
+|   |-- scanner-app
+|   |   `-- package.json
+|   `-- web
+|       |-- README.md
+|       |-- eslint.config.mjs
+|       |-- next-env.d.ts
+|       |-- next.config.ts
+|       |-- package.json
+|       |-- postcss.config.mjs
+|       |-- public
+|       |   |-- file.svg
+|       |   |-- globe.svg
+|       |   |-- images
+|       |   |   |-- Mastercard-logo.svg
+|       |   |   |-- backgound-pattern.jpg
+|       |   |   |-- bushfire.jpg
+|       |   |   |-- cash.png
+|       |   |   |-- flag.png
+|       |   |   |-- hero-1.jpg
+|       |   |   |-- hero-2.jpg
+|       |   |   |-- hero-3.jpg
+|       |   |   |-- hero-4.jpg
+|       |   |   |-- hero-5.jpg
+|       |   |   |-- hero-6.jpg
+|       |   |   |-- logo.PNG
+|       |   |   |-- mastercard.png
+|       |   |   |-- momo.png
+|       |   |   |-- pattern.jpg
+|       |   |   |-- pattern1.jpg
+|       |   |   |-- sidvokodvo.jpg
+|       |   |   |-- umhlanga.jpg
+|       |   |   `-- visa.png
+|       |   |-- manifest.json
+|       |   |-- next.svg
+|       |   |-- sw.js
+|       |   |-- vercel.svg
+|       |   `-- window.svg
+|       |-- src
+|       |   |-- app
+|       |   |   |-- auth
+|       |   |   |   |-- login
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- profile
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   `-- register
+|       |   |   |       `-- page.tsx
+|       |   |   |-- contexts
+|       |   |   |   `-- auth-context.tsx
+|       |   |   |-- favicon.ico
+|       |   |   |-- globals.css
+|       |   |   |-- layout.tsx
+|       |   |   |-- organizer
+|       |   |   |   |-- analytics
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- dashboard
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- events
+|       |   |   |   |   |-- [id]
+|       |   |   |   |   |   `-- page.tsx
+|       |   |   |   |   |-- create
+|       |   |   |   |   |   `-- page.tsx
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- layout.tsx
+|       |   |   |   |-- login
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- marketing
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- page.tsx
+|       |   |   |   |-- register
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   |-- settings
+|       |   |   |   |   |-- page.tsx
+|       |   |   |   |   `-- tickets
+|       |   |   |   |       `-- page.tsx
+|       |   |   |   |-- tickets
+|       |   |   |   |   |-- [id]
+|       |   |   |   |   |   `-- page.tsx
+|       |   |   |   |   |-- create
+|       |   |   |   |   |   `-- page.tsx
+|       |   |   |   |   `-- page.tsx
+|       |   |   |   `-- vendors
+|       |   |   |       |-- create
+|       |   |   |       |   `-- page.tsx
+|       |   |   |       `-- page.tsx
+|       |   |   |-- page.tsx
+|       |   |   `-- providers.tsx
+|       |   |-- components
+|       |   |   |-- landing
+|       |   |   |   |-- AuthHeader.tsx
+|       |   |   |   |-- Categories.tsx
+|       |   |   |   |-- ExperienceSection.tsx
+|       |   |   |   |-- FeaturedEvents.tsx
+|       |   |   |   |-- Footer.tsx
+|       |   |   |   |-- Hero.tsx
+|       |   |   |   |-- HowItWorks.tsx
+|       |   |   |   |-- Navbar.tsx
+|       |   |   |   |-- OrganizerCTA.tsx
+|       |   |   |   `-- UpcomingHighlights.tsx
+|       |   |   |-- organizer
+|       |   |   |   |-- AICopilotPanel.tsx
+|       |   |   |   |-- AttendeeList.tsx
+|       |   |   |   |-- BillingInfo.tsx
+|       |   |   |   |-- DynamicPricingAdjuster.tsx
+|       |   |   |   |-- EmailCampaignForm.tsx
+|       |   |   |   |-- EventCard.tsx
+|       |   |   |   |-- NotificationPrefs.tsx
+|       |   |   |   |-- OrginizerCTA.tsx
+|       |   |   |   |-- ProfileEditor.tsx
+|       |   |   |   |-- PromoCodeForm.tsx
+|       |   |   |   |-- RefundCenter.tsx
+|       |   |   |   |-- TicketTypeCard.tsx
+|       |   |   |   |-- ValuePropCard.tsx
+|       |   |   |   `-- VendorCard.tsx
+|       |   |   `-- ui
+|       |   |       `-- loading-spinner.tsx
+|       |   |-- hooks
+|       |   |   |-- useAuth.ts
+|       |   |   |-- useDynamicPricing.ts
+|       |   |   |-- useOfflineStorage.ts
+|       |   |   `-- useWebSocket.ts
+|       |   |-- lib
+|       |   |   |-- api.ts
+|       |   |   |-- constants.ts
+|       |   |   |-- dummyData.ts
+|       |   |   `-- utils.ts
+|       |   |-- theme
+|       |   |   |-- colors.ts
+|       |   |   `-- styles.ts
+|       |   |-- theme.ts
+|       |   `-- types
+|       |       `-- schema.ts
+|       |-- tree.txt
+|       `-- tsconfig.json
+|-- tables.md
 |-- tree.txt
-`-- tsconfig.json
+|-- tsconfig.json
+`-- yarn.lock
 
-48 directories, 103 files
+44 directories, 131 files

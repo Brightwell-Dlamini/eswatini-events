@@ -41,6 +41,11 @@ USER_MANAGE
 SETTINGS_UPDATE
 ANALYTICS_VIEW
 REPORTS_GENERATE
+EVENT_SUBMIT_FOR_APPROVAL
+VENDOR_APPLY_TO_EVENT
+VENDOR_SELL
+TICKET_SCAN
+AGENT_SELL_TICKETS
 }
 
 enum ReportFormat {
@@ -72,6 +77,8 @@ ATTENDEE_CHECKED_IN
 PAYMENT_PROCESSED
 REFUND_ISSUED
 EVENT_PUBLISHED
+APPROVAL_REQUEST_SUBMITTED
+APPROVAL_REQUEST_APPROVED
 }
 
 enum TicketStatus {
@@ -277,6 +284,9 @@ deletedAt DateTime? @map("deleted_at")
 canResellTickets Boolean @default(false)
 fraudScore Float? @default(0.0) // For automated risk assessment
 deviceTokens DeviceToken[]
+vendorApplicationReviews VendorApplication[] @relation("VendorReviewer")
+@@unique([role], name: "unique_super_admin", map: "unique_super_admin_constraint") // Ensures only one SUPER_ADMIN
+deviceVerifications DeviceVerification[]
 
 // Relations
 accounts Account[]
@@ -339,8 +349,9 @@ createdIntegrations Integration[] @relation("UserCreatedIntegrations")
 ownedIntegrations Integration[] @relation("IntegrationOwner")
 createdWebhooks Webhook[] @relation("UserCreatedWebhooks")
 ownedWebhooks Webhook[] @relation("WebhookOwner")
+approvalRequests ApprovalRequest[] @relation("stakeholder")
+approvalReviews ApprovalRequest[] @relation("Reviewer")
 
-@@index([role])
 @@index([tenantId])
 @@index([deletedAt])
 @@index([email, signupMethod])
@@ -467,11 +478,36 @@ expiresAt DateTime
 createdAt DateTime @default(now())
 updatedAt DateTime @updatedAt
 fraudScore Float? @default(0.0) // For automated risk assessment
+verificationType String? // e.g., "GATE_OPERATOR", "KYC"
+trainingCert String? // For gate operators
+autoApprovalThreshold Float? @default(0.1) // For fraudScore-based automation
 
 user User @relation(fields: [userId], references: [id])
 userId String @db.ObjectId
 
 @@index([userId])
+}
+model ApprovalRequest {
+id String @id @default(auto()) @map("\_id") @db.ObjectId
+stakeholderId String @db.ObjectId
+role UserRole
+status ApprovalStatus @default(PENDING)
+requestDetails Json? // e.g., { organizerProposal: "Event plan PDF", documents: ["license.pdf"] }
+submittedAt DateTime @default(now())
+reviewedAt DateTime?
+notes String?
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+autoApprovalThreshold Float? @default(0.1) // For fraudScore-based automation
+stakeholder User @relation("stakeholder", fields: [stakeholderId], references: [id])
+reviewerId String? @db.ObjectId // Add this line
+reviewer User? @relation("Reviewer", fields: [reviewerId], references: [id])
+communityAgent CommunityAgent? @relation("ApprovalRequestToCommunityAgent")
+communityAgentId String? @db.ObjectId
+
+@@map("approval_requests")
+@@index([stakeholderId, role])
+@@index([status])
 }
 
 model UserAnalytics {
@@ -562,7 +598,7 @@ deletedAt DateTime? @map("deleted_at")
 publishedAt DateTime?
 culturalEngagement Json? // { communityAttendance: 500, traditionalPerformers: 10 }
 liveAttendeeCount Int? @default(0)
-
+governmentApprovals GovernmentApproval[]
 tenant Tenant? @relation("TenantEvents", fields: [tenantId], references: [id], onDelete: SetNull)
 tenantId String? @db.ObjectId
 organizer User @relation("OrganizedEvents", fields: [organizerId], references: [id], onDelete: Cascade)
@@ -611,6 +647,7 @@ RSVP RSVP[]
 OfflineTicket OfflineTicket[]
 Report Report[]
 Webhook Webhook[]
+vendorApplications VendorApplication[]
 
 @@index([organizerId])
 @@index([startTime])
@@ -629,7 +666,18 @@ Webhook Webhook[]
 @@index([startTime, status])
 @@index([city, type, startTime]) // For search
 }
+model GovernmentApproval {
+id String @id @default(auto()) @map("\_id") @db.ObjectId
+eventId String @db.ObjectId
+event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+status ApprovalStatus @default(PENDING)
+authorityDetails Json? // e.g., { authority: "Ministry of Culture", contact: "John Doe" }
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
 
+    @@index([eventId])
+
+}
 model EventCategory {
 id String @id @default(auto()) @map("\_id") @db.ObjectId
 name String
@@ -1422,11 +1470,32 @@ payouts Payout[]
 boothAssignments BoothAssignment[]
 vendorOrders VendorOrder[]
 analytics VendorAnalytics[]
+applications VendorApplication[] @relation
 
 @@index([eventId])
 @@index([eventId, userId])
 @@index([userId])
 @@index([deletedAt])
+}
+model VendorApplication {
+id String @id @default(auto()) @map("\_id") @db.ObjectId
+vendorId String @db.ObjectId
+vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+eventId String @db.ObjectId
+event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+status ApprovalStatus @default(PENDING)
+applicationDetails Json? // e.g., { boothRequest: "10x10", products: ["food", "merch"] }
+submittedAt DateTime @default(now())
+reviewedAt DateTime?
+reviewer User? @relation("VendorReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+reviewerId String? @db.ObjectId // Organizer who reviews
+notes String?
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+    @@index([vendorId, eventId])
+    @@index([status])
+
 }
 
 model VendorAnalytics {
@@ -1689,7 +1758,7 @@ channels NotificationChannel[]
 isEmergency Boolean @default(false)
 priority NotificationPriority @default(LOW)
 createdAt DateTime @default(now())
-
+notificationType String? // e.g., "APPROVAL_STATUS_CHANGED"
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
@@ -1766,6 +1835,10 @@ ussdMenu USSDMenu @relation(fields: [assignedMenu], references: [id], onDelete: 
 agentStatus ApprovalStatus @default(PENDING)
 AgentTicketStock AgentTicketStock[]
 offlineTickets OfflineTicket[]
+approvalRequest ApprovalRequest? @relation("ApprovalRequestToCommunityAgent", fields: [approvalRequestId], references: [id], onDelete: NoAction)
+approvalRequestId String? @db.ObjectId @unique
+
+@@map("community_agents")
 
 }
 
@@ -1969,7 +2042,6 @@ fee Float @default(0.0)
 isOffline Boolean @default(false)
 syncStatus String? @default("SYNCED")
 createdAt DateTime @default(now())
-
 wristband Wristband @relation(fields: [wristbandId], references: [id], onDelete: Cascade)
 wristbandId String @db.ObjectId
 payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
@@ -1995,7 +2067,7 @@ deviceInfo Json?
 createdAt DateTime @default(now())
 user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 userId String? @db.ObjectId
-
+actionType String? // e.g., "ORGANIZER_APPROVED", "VENDOR_APPROVED", "GATE_OPERATOR_VERIFIED"
 @@index([createdAt])
 @@index([userId])
 @@index([entityType, entityId])
@@ -2011,7 +2083,6 @@ ipRestrictions String[] @default([])
 rateLimit Int @default(1000)
 createdAt DateTime @default(now())
 updatedAt DateTime @updatedAt
-
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 
@@ -2046,7 +2117,6 @@ isSynced Boolean @default(false)
 syncAttempts Int @default(0)
 createdAt DateTime @default(now())
 lastSyncAttempt DateTime?
-
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 
@@ -2058,7 +2128,6 @@ id String @id @default(auto()) @map("\_id") @db.ObjectId
 data Json
 lastUpdated DateTime @default(now())
 expiresAt DateTime
-
 event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 eventId String @db.ObjectId
 deviceId String
@@ -2066,7 +2135,19 @@ deviceId String
 @@index([eventId, deviceId])
 @@index([expiresAt])
 }
+model DeviceVerification {
+id String @id @default(auto()) @map("\_id") @db.ObjectId
+deviceId String @unique
+operatorId String @db.ObjectId
+operator User @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+status ApprovalStatus @default(PENDING)
+verifiedAt DateTime?
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
 
+    @@index([operatorId])
+
+}
 model CulturalEventConfig {
 id String @id @default(auto()) @map("\_id") @db.ObjectId
 traditionalElements String[]

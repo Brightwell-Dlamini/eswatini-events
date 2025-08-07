@@ -8,7 +8,7 @@ const router = Router();
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'http://localhost:4000/auth/google/callback'
+  `${process.env.FRONTEND_URL}/auth/google/callback`
 );
 
 router.get('/google', (req, res) => {
@@ -47,9 +47,10 @@ router.get('/google/callback', async (req, res) => {
       data: { userId: user.id, action: 'LOGIN', entityType: 'USER', entityId: user.id }
     });
 
-    res.redirect(`http://localhost:3000/dashboard?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    console.error('Google OAuth error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?error=authentication_failed`);
   }
 });
 

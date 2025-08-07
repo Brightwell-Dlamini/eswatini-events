@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../lib/db';
 import { redis } from '../lib/redis';
+import logger from '../lib/logger';
 
 const router = Router();
 
@@ -24,7 +25,7 @@ const roleMap: Record<string, UserRole> = {
 
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, phone, password, landingPage } = registerSchema.parse(req.body);
+    const { email, phone, password, landingPage } = registerSchema.parse(req.body); logger.info(`Registering user: ${email || phone}`);
     const hashedPassword = await bcrypt.hash(password, 10);
     const role = roleMap[landingPage] || UserRole.ATTENDEE;
 
@@ -54,7 +55,7 @@ router.post('/register', async (req: Request, res: Response) => {
     await prisma.auditLog.create({
       data: { userId: user.id, action: 'REGISTER', entityType: 'USER', entityId: user.id }
     });
-
+    logger.info(`User created: ${user.id}`);
     res.json({ token, user: { id: user.id, email, phone, role } });
   } catch (error) {
     res.status(400).json({ error: (error as Error).message });

@@ -1,0 +1,30 @@
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-06T14:27:24.135Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-06T14:27:24.153Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/users/me"},"timestamp":"2025-08-06T14:27:26.770Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/users/me"},"timestamp":"2025-08-06T14:27:26.775Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-06T14:28:00.365Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-06T14:28:00.368Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-06T14:28:12.595Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-06T14:28:12.599Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-06T14:28:22.252Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-06T14:28:22.259Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/users/me"},"timestamp":"2025-08-06T14:28:24.057Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/users/me"},"timestamp":"2025-08-06T14:28:24.065Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-06T14:29:27.211Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-06T14:29:27.215Z"}
+{"level":"info","message":"Registering user: dlaminibrightwell@gmail.com","timestamp":"2025-08-06T14:29:27.222Z"}
+{"level":"info","message":"User created: 689366c7343cc88421995ed6","timestamp":"2025-08-06T14:29:28.183Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/users/me"},"timestamp":"2025-08-06T14:29:29.063Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/users/me"},"timestamp":"2025-08-06T14:29:29.069Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-06T14:29:58.229Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-06T14:29:58.233Z"}
+{"level":"info","message":"Registering user: dlaminibrightwell@gmail.com","timestamp":"2025-08-06T14:29:58.236Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-06T14:30:42.078Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-06T14:30:42.082Z"}
+{"level":"info","message":"Registering user: attendee1@eswatinievents.com","timestamp":"2025-08-06T14:30:42.085Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-06T14:33:07.988Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-06T14:33:07.992Z"}
+{"level":"info","message":"Registering user: attendee1@eswatinievents.com","timestamp":"2025-08-06T14:33:07.995Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-06T14:33:20.912Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-06T14:33:20.915Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-06T15:06:34.914Z"}
