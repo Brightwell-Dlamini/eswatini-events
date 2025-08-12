@@ -1,0 +1,4 @@
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-07T08:08:13.123Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-07T08:08:28.091Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-07T08:09:14.999Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-07T08:09:36.858Z"}
