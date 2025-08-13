@@ -1,12 +1,13 @@
-import Categories from '@/components/landing/Categories';
+import Categories from '@/components/landing/Categories_landing';
 import ExperienceSection from '@/components/landing/ExperienceSection';
 import FeaturedEvents from '@/components/landing/FeaturedEvents';
 import Footer from '@/components/landing/Footer';
 import Hero from '@/components/landing/Hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import Navbar from '@/components/landing/Navbar';
-// import UpcomingHighlights from '@/components/landing/UpcomingHighlights';
+import UpcomingHighlights from '@/components/landing/UpcomingHighlights';
 import OrganizerCTA from '@/components/organizer/OrginizerCTA';
+
 import Head from 'next/head';
 export default function Home() {
   return (
@@ -38,7 +39,7 @@ export default function Home() {
         <Hero />
         <HowItWorks />
         <Categories />
-        {/* <UpcomingHighlights /> */}
+        <UpcomingHighlights />
         <ExperienceSection />
         <FeaturedEvents />
         <OrganizerCTA />

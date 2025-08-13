@@ -65,9 +65,9 @@ body {
 }
 
 body {
-  @apply min-h-screen bg-gradient-to-br from-[rgb(74,20,140)] to-[rgb(255,109,0)] text-white;
+  @apply min-h-screen  text-white;
 }
-
+/* bg-gradient-to-br from-[rgb(74,20,140)] to-[rgb(255,109,0)] */
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -80,6 +80,12 @@ body {
   50% {
     opacity: 0.5;
   }
+}
+:root {
+  --motion-reduce: 0;
+}
+.motion-safe {
+  opacity: var(--motion-reduce, 1);
 }
 
 @layer components {

@@ -1,16 +1,15 @@
 'use client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import {
   ClockIcon,
   MapPinIcon,
   SparklesIcon,
   CalendarIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon,
   TicketIcon,
 } from '@heroicons/react/24/outline';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type Event = {
   id: number;
@@ -123,7 +122,7 @@ const events: Event[] = [
   },
 ];
 
-const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-SZ', {
     day: 'numeric',
@@ -132,7 +131,7 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
-const calculateTimeLeft = (eventDate: string) => {
+export const calculateTimeLeft = (eventDate: string) => {
   const difference = new Date(eventDate).getTime() - new Date().getTime();
   if (difference <= 0) return 'Event passed';
 
@@ -179,27 +178,32 @@ const groupEventsByTimeframe = (
 const UpcomingHighlights = () => {
   const [isClient, setIsClient] = useState(false);
   const [timeframe, setTimeframe] = useState<'all' | 'week' | 'month'>('all');
-  const [page, setPage] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
     setIsClient(true);
+    const handleResize = () => {
+      setVisibleCount(
+        window.innerWidth < 768 ? 1 : window.innerWidth < 1024 ? 2 : 3
+      );
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const filteredEvents = groupEventsByTimeframe(events, timeframe);
-  const itemsPerPage = 6; // 3 columns x 2 rows
-  const pageCount = Math.ceil(filteredEvents.length / itemsPerPage);
-  const paginatedEvents = filteredEvents.slice(
-    page * itemsPerPage,
-    (page + 1) * itemsPerPage
+  const filteredEvents = useMemo(
+    () => groupEventsByTimeframe(events, timeframe),
+    [timeframe]
   );
-
-  const paginate = (newDirection: number) => {
-    setDirection(newDirection);
-    setPage((prev) =>
-      Math.max(0, Math.min(pageCount - 1, prev + newDirection))
-    );
-  };
+  const totalPages = Math.ceil(filteredEvents.length / visibleCount);
+  const canScrollPrev = currentPage > 0;
+  const canScrollNext = currentPage < totalPages - 1;
+  const visibleEvents = filteredEvents.slice(
+    currentPage * visibleCount,
+    (currentPage + 1) * visibleCount
+  );
 
   return (
     <section
@@ -304,7 +308,7 @@ const UpcomingHighlights = () => {
             <button
               onClick={() => {
                 setTimeframe('all');
-                setPage(0);
+                setCurrentPage(0);
               }}
               className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 timeframe === 'all'
@@ -317,7 +321,7 @@ const UpcomingHighlights = () => {
             <button
               onClick={() => {
                 setTimeframe('week');
-                setPage(0);
+                setCurrentPage(0);
               }}
               className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 timeframe === 'week'
@@ -330,7 +334,7 @@ const UpcomingHighlights = () => {
             <button
               onClick={() => {
                 setTimeframe('month');
-                setPage(0);
+                setCurrentPage(0);
               }}
               className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 timeframe === 'month'
@@ -344,155 +348,147 @@ const UpcomingHighlights = () => {
         </div>
 
         {/* Events grid with pagination */}
+        {/* Events grid */}
         <div className="relative">
-          <AnimatePresence initial={false} custom={direction}>
-            {paginatedEvents.length > 0 ? (
-              <motion.div
-                key={page}
-                custom={direction}
-                initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {visibleEvents.map((event, i) => (
+              <motion.article
+                key={event.id}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ y: -10 }}
+                className="group relative overflow-hidden rounded-2xl shadow-lg bg-white dark:bg-gray-800"
               >
-                {paginatedEvents.map((event, i) => (
-                  <motion.article
-                    key={event.id}
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    whileHover={{
-                      y: -10,
-                      transition: { type: 'spring', bounce: 0.4 },
-                    }}
-                    className="group relative overflow-hidden rounded-2xl shadow-lg focus:outline-none transition-all duration-300 hover:shadow-xl bg-white dark:bg-gray-800"
-                    tabIndex={0}
-                    aria-labelledby={`event-${event.id}-title`}
+                <div className="relative h-64">
+                  <Image
+                    src={event.image}
+                    alt={`${event.name} promotional image`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority={event.imagePriority}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-800 dark:text-gray-200 shadow-sm">
+                    {event.category}
+                  </div>
+
+                  <div
+                    className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
+                      event.price === 'Free'
+                        ? 'bg-green-500/90 text-white'
+                        : 'bg-white/90 text-gray-800'
+                    }`}
                   >
-                    <div className="relative h-64">
-                      <Image
-                        src={event.image}
-                        alt={`${event.name} promotional image`}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        priority={event.imagePriority}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    {event.price}
+                  </div>
+                </div>
 
-                      {/* Category badge */}
-                      <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-800 dark:text-gray-200 shadow-sm">
-                        {event.category}
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {event.name}
+                      </h3>
+                      <div className="flex items-center text-gray-600 dark:text-gray-300 mt-2">
+                        <CalendarIcon className="h-5 w-5 mr-2" />
+                        <span>{formatDate(event.date)}</span>
                       </div>
-
-                      {/* Price tag */}
-                      <div
-                        className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-                          event.price === 'Free'
-                            ? 'bg-green-500/90 text-white'
-                            : 'bg-white/90 text-gray-800'
-                        }`}
-                      >
-                        {event.price}
+                      <div className="flex items-center text-gray-600 dark:text-gray-300 mt-2">
+                        <MapPinIcon className="h-5 w-5 mr-2" />
+                        <span>{event.location}</span>
                       </div>
                     </div>
 
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3
-                            id={`event-${event.id}-title`}
-                            className="text-xl font-bold text-gray-900 dark:text-white"
-                          >
-                            {event.name}
-                          </h3>
-                          <div className="flex items-center text-gray-600 dark:text-gray-300 mt-2">
-                            <CalendarIcon className="h-5 w-5 mr-2" />
-                            <span>{formatDate(event.date)}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600 dark:text-gray-300 mt-2">
-                            <MapPinIcon className="h-5 w-5 mr-2" />
-                            <span>{event.location}</span>
-                          </div>
-                        </div>
+                    {event.ticketsLeft !== null ? (
+                      <span className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md whitespace-nowrap">
+                        Only {event.ticketsLeft} left
+                      </span>
+                    ) : (
+                      <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md whitespace-nowrap">
+                        Free Entry
+                      </span>
+                    )}
+                  </div>
 
-                        {/* Tickets left or free badge */}
-                        {event.ticketsLeft !== null ? (
-                          <span className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md whitespace-nowrap">
-                            Only {event.ticketsLeft} left
-                          </span>
-                        ) : (
-                          <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md whitespace-nowrap">
-                            Free Entry
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <ClockIcon className="h-5 w-5" />
-                          <span className="text-sm font-medium">
-                            {calculateTimeLeft(event.date)}
-                          </span>
-                        </div>
-                        <button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md hover:shadow-lg transition-all">
-                          {event.ticketsLeft !== null ? (
-                            <>
-                              <TicketIcon className="h-4 w-4" />
-                              Get Tickets
-                            </>
-                          ) : (
-                            'More Info'
-                          )}
-                        </button>
-                      </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                      <ClockIcon className="h-5 w-5" />
+                      <span className="text-sm font-medium">
+                        {calculateTimeLeft(event.date)}
+                      </span>
                     </div>
-                  </motion.article>
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-20"
-              >
-                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-                  No events found
-                </h3>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  There are no upcoming events for this {timeframe}.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    <button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md hover:shadow-lg transition-all">
+                      {event.ticketsLeft !== null ? (
+                        <>
+                          <TicketIcon className="h-4 w-4" />
+                          Get Tickets
+                        </>
+                      ) : (
+                        'More Info'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
 
           {/* Pagination controls */}
-          {paginatedEvents.length > 0 && pageCount > 1 && (
-            <div className="flex justify-center mt-12">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => paginate(-1)}
-                  disabled={page === 0}
-                  className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  aria-label="Previous page"
-                >
-                  <ArrowLeftIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                </button>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Page {page + 1} of {pageCount}
-                </span>
-                <button
-                  onClick={() => paginate(1)}
-                  disabled={page === pageCount - 1}
-                  className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  aria-label="Next page"
-                >
-                  <ArrowRightIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                </button>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center mt-12 space-x-6">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                disabled={!canScrollPrev}
+                className="p-2 rounded-full disabled:opacity-30 transition-all bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700"
+                aria-label="Previous events"
+              >
+                <FiChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              <div className="flex space-x-2">
+                {Array.from({ length: totalPages }).map((_, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => setCurrentPage(index)}
+                    whileHover={{ scale: 1.2 }}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      index === currentPage
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400 w-5'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                    aria-label={`Go to page ${index + 1}`}
+                  />
+                ))}
               </div>
+
+              <button
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                disabled={!canScrollNext}
+                className="p-2 rounded-full disabled:opacity-30 transition-all bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700"
+                aria-label="Next events"
+              >
+                <FiChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              </button>
             </div>
+          )}
+
+          {filteredEvents.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-20"
+            >
+              <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+                No events found
+              </h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                There are no upcoming events for this {timeframe}.
+              </p>
+            </motion.div>
           )}
         </div>
       </div>

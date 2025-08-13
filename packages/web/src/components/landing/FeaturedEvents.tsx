@@ -492,8 +492,6 @@ const FeaturedEvents = () => {
         style={{ y, opacity }}
         className="absolute inset-0 z-0 pointer-events-none"
       >
-        <div className="absolute inset-0 bg-[url('/images/background-pattern.png')] opacity-5 dark:opacity-10" />
-
         {bubbles.map((bubble) => (
           <motion.div
             key={bubble.id}
@@ -596,7 +594,7 @@ const FeaturedEvents = () => {
                 }}
                 className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 group"
               >
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-42 overflow-hidden">
                   <Image
                     src={event.image}
                     alt={event.title}

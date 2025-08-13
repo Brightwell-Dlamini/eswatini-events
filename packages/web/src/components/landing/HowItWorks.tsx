@@ -147,7 +147,7 @@ const HowItWorks = ({
       scale: 0.97,
     },
   };
-
+  //
   const particleVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -190,7 +190,7 @@ const HowItWorks = ({
     <section
       id="how-it-works"
       ref={containerRef}
-      className="relative pt-32 pb-20 bg-gradient-to-b from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 overflow-hidden"
+      className="relative pt-28  bg-gradient-to-b from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 overflow-hidden"
       aria-labelledby="how-it-works-heading"
     >
       {/* Animated background elements */}
@@ -200,8 +200,8 @@ const HowItWorks = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
-        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-purple-400/10 blur-3xl" />
-        <div className="absolute bottom-1/3 -right-20 w-96 h-96 rounded-full bg-pink-400/10 blur-3xl" />
+        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-purple-400/10 blur-2xl" />
+        <div className="absolute bottom-1/3 -right-20 w-96 h-96 rounded-full bg-pink-400/10 blur-2xl" />
         <motion.div
           className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full bg-indigo-400/10 blur-2xl"
           animate={{

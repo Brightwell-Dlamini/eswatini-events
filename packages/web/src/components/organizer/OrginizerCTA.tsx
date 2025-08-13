@@ -21,7 +21,7 @@ import {
   CheckIcon,
   TicketPercentIcon,
 } from 'lucide-react';
-import { icon } from 'leaflet';
+
 import { GiCash } from 'react-icons/gi';
 
 const benefits = [
@@ -178,13 +178,20 @@ const OrganizerCTA = () => {
           viewport={{ once: true, margin: '-100px' }}
           className="text-center mb-20"
         >
+          {' '}
+          <motion.div
+            className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+          >
+            <TicketIcon className="h-4 w-4 mr-2" />
+            FOR ORGANIZERS
+          </motion.div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Everything You Need
             </span>{' '}
             to Sell Out Your Events
           </h2>
-
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             From local gatherings to national festivals, we provide the tools to
             maximize attendance, minimize hassle, and grow your revenue.
@@ -338,7 +345,6 @@ const OrganizerCTA = () => {
             viewport={{ once: true }}
             className="relative bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl overflow-hidden shadow-2xl"
           >
-            <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10" />
             <div className="relative z-10 p-8 text-white">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">
                 Ready to Transform Your Events?
