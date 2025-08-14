@@ -6,16 +6,13 @@ import {
   useScroll,
   AnimatePresence,
 } from 'framer-motion';
-
 import {
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline';
-
 import Image from 'next/image';
-
 import { useEffect, useState } from 'react';
 import { ClockIcon } from 'lucide-react';
 
@@ -37,15 +34,21 @@ const HeroSection = () => {
   // Text variations
   const textVariations = [
     {
-      title: 'Where Africa Celebrates',
-      description:
-        "Discover, book, and experience the best events in Eswatini. From cultural festivals to sports matches, we've got your ticket to unforgettable moments.",
-    },
-    {
       title: 'Eswatini Comes Alive!',
       description:
         'Experience the heartbeat of Africas hidden gem with seamless ticketing for traditional dances, music festivals, and local sports events.',
     },
+    {
+      title: 'Made for EmaSwati, by EmaSwati',
+      description:
+        "We're built for Eswatini, not adapted from foreign systems. Our platform understands local needs, from payment preferences to event cultures.",
+    },
+    {
+      title: 'Where Africa Celebrates',
+      description:
+        "Discover, book, and experience the best events in Eswatini. From cultural festivals to sports matches, we've got your ticket to unforgettable moments.",
+    },
+
     {
       title: 'Innovative Event Solutions',
       description:
@@ -63,7 +66,6 @@ const HeroSection = () => {
     category: string;
     price?: string;
   };
-
   // Featured events data
   const events: Event[] = [
     {
@@ -232,7 +234,7 @@ const HeroSection = () => {
   if (!mounted) return null;
 
   return (
-    <section className="relative overflow-hidden h-screen">
+    <section className="relative overflow-hidden h-[100vh]">
       {/* Background images carousel */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <AnimatePresence mode="wait">
@@ -267,7 +269,7 @@ const HeroSection = () => {
 
       {/* Main content */}
       <motion.div
-        className="relative z-10 pt-32 pb-4 px-4 sm:px-6 lg:px-8 h-full flex flex-col"
+        className="relative z-10 pt-28 pb-4 px-4 sm:px-6 lg:px-8 h-full flex flex-col"
         style={{ y: yPos, opacity }}
       >
         <div className="max-w-7xl mx-auto flex flex-col">
@@ -337,9 +339,9 @@ const HeroSection = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   whileHover={{ y: -10 }}
-                  className="group relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800 h-full"
+                  className="group relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 h-full"
                 >
-                  <div className="relative h-40">
+                  <div className="relative h-30">
                     <Image
                       src={event.image}
                       alt={`${event.name} promotional image`}

@@ -60,7 +60,7 @@ const NAV_LINKS = [
 // Update LANGUAGES constant
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'ss', name: 'SiSwati', flag: '🇸🇿' },
+  { code: 'ss', name: 'Siswati', flag: '🇸🇿' },
   { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
   { code: 'fr', name: 'French', flag: '🇫🇷' },
 ];
@@ -88,9 +88,6 @@ const useClickOutside = (
     };
   }, [ref, handler]);
 };
-
-// Dropdown Component
-// This component can be used for both language and user menus
 
 const DropdownMenu = ({
   isOpen,

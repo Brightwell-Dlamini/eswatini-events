@@ -3,13 +3,11 @@
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import {
-  TicketIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
   QrCodeIcon,
   DevicePhoneMobileIcon,
-  SparklesIcon,
   ArrowRightIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
@@ -23,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { GiCash } from 'react-icons/gi';
+import { MdPayment } from 'react-icons/md';
 
 const benefits = [
   {
@@ -30,15 +29,15 @@ const benefits = [
       <CurrencyDollarIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
     ),
     title: 'Lower Fees',
-    description: "Only 5-8% fees vs competitors' 10-15%",
-    highlight: 'Save 30-50% on ticketing costs',
+    description: "Only 3-5% fees vs competitors' 10-15%",
+    highlight: ' More money stays with organizers where it belongs!',
   },
   {
     icon: (
       <TicketPercentIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
     ),
     title: 'Dyanamic Pricing',
-    description: 'Adjust prices based on demand and sales',
+    description: 'Algo to auto adjust prices based on demand and sales',
     highlight: 'Increase revenue by 20%+',
   },
   {
@@ -84,11 +83,11 @@ const benefits = [
   },
   {
     icon: (
-      <SparklesIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+      <MdPayment className="h-8 w-8 text-purple-600 dark:text-purple-400" />
     ),
-    title: 'AI-Copilot',
-    description: 'Get AI-generated event ideas, marketing tips, and more',
-    highlight: 'Boost your event planning with AI assistance ',
+    title: 'Local Payments',
+    description: 'MTN Mobile Money, M-Pesa, cash, and USSD support built in.',
+    highlight: 'Reach all attendees, not just those with credit cards.',
   },
   {
     icon: <GiCash className="h-8 w-8 text-purple-600 dark:text-purple-400" />,
@@ -112,6 +111,13 @@ const testimonials = [
     name: 'MTN Bushfire Team',
     role: 'Music Festival',
     image: '/images/bushfire.jpg',
+  },
+  {
+    name: 'Nomthandazo Mamba',
+    role: 'Event Coordinator, MTN Bushfire',
+    quote:
+      'Eswatini Events reduced our setup time by 60% and gave us real control over our events.',
+    image: '/images/testimonial-1.jpg',
   },
 ];
 
@@ -178,14 +184,6 @@ const OrganizerCTA = () => {
           viewport={{ once: true, margin: '-100px' }}
           className="text-center mb-20"
         >
-          {' '}
-          <motion.div
-            className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 text-sm font-medium"
-            whileHover={{ scale: 1.05 }}
-          >
-            <TicketIcon className="h-4 w-4 mr-2" />
-            FOR ORGANIZERS
-          </motion.div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Everything You Need
@@ -250,6 +248,10 @@ const OrganizerCTA = () => {
               <span className="text-purple-600 dark:text-purple-400">
                 Top Event Creators
               </span>
+              <p className="text-sm text-gray-400 max-w-3xl mx-auto mt-2">
+                From football matches to music festivals, we power the
+                nation&apos;s celebrations.
+              </p>
             </motion.h3>
 
             <div className="relative">
@@ -343,7 +345,7 @@ const OrganizerCTA = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
             viewport={{ once: true }}
-            className="relative bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl overflow-hidden shadow-2xl"
+            className="relative bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl overflow-hidden shadow-2xl"
           >
             <div className="relative z-10 p-8 text-white">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">

@@ -1,9 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform, useAnimation } from 'framer-motion';
-
 import { useRef, useState } from 'react';
-
 import {
   CalendarIcon,
   MapPinIcon,
@@ -12,7 +10,6 @@ import {
   StarIcon,
   BoltIcon as LightningBoltIcon,
 } from '@heroicons/react/24/outline';
-
 import {
   FaHeart,
   FaRegHeart,
@@ -20,431 +17,253 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from 'react-icons/fa';
-
 import Image from 'next/image';
 
 const events = [
   {
     id: 8,
-
     title: 'Incwala Ceremony',
-
     description:
       'The most sacred national ritual, a kingship ceremony dating back centuries',
-
     date: 'December 2024',
-
     location: 'Lobamba',
-
     image: '/images/bushfire.jpg',
-
     price: 0,
-
     category: 'Cultural',
-
     isFree: true,
-
     isTrending: true,
-
     rating: 4.9,
-
     ticketsLeft: 0,
-
     totalTickets: 0,
-
     ticketsSold: 0,
   },
 
   {
     id: 2,
-
     title: 'Umhlanga Reed Dance',
-
     description:
       'Annual ceremony where young women cut reeds and present them to the Queen Mother',
-
     date: 'August 2024',
-
     location: 'Ludzidzini Royal Village',
-
     image: '/images/bushfire.jpg',
-
     price: 0,
-
     category: 'Cultural',
-
     isFree: true,
-
     isTrending: true,
-
     rating: 4.8,
-
     ticketsLeft: 0,
-
     totalTickets: 0,
-
     ticketsSold: 0,
   },
 
   {
     id: 7,
-
     title: 'Marula Festival',
-
     description:
       'Celebration of the marula fruit harvest with traditional music and dance',
-
     date: 'February 2025',
-
     location: 'Hlane Royal National Park',
-
     image: '/images/bushfire.jpg',
-
     price: 0,
-
     category: 'Cultural',
-
     isFree: true,
-
     isPopular: true,
-
     rating: 4.7,
-
     ticketsLeft: 0,
-
     totalTickets: 0,
-
     ticketsSold: 0,
   },
 
   {
     id: 4,
-
     title: 'MTN Bushfire Festival',
-
     description:
       "Africa's most internationally celebrated festival of music and arts",
-
     date: 'May 24-26, 2025',
-
     location: 'Malkerns Valley',
-
     image: '/images/bushfire.jpg',
-
     price: 50,
-
     earlyBirdPrice: 35,
-
     earlyBirdCutoff: '2025-03-01',
-
     category: 'Music Festival',
-
     isTrending: true,
-
     rating: 4.8,
-
     ticketsLeft: 12,
-
     totalTickets: 5000,
-
     ticketsSold: 4870,
   },
-
   {
     id: 5,
-
     title: 'Sibebe Survivor Challenge',
-
     description:
       "Hike up Africa's largest granite dome with live music at the summit",
-
     date: 'September 7, 2025',
-
     location: 'Sibebe Rock',
-
     image: '/images/bushfire.jpg',
-
     price: 25,
-
     earlyBirdPrice: 15,
-
     earlyBirdCutoff: '2025-06-01',
-
     category: 'Adventure',
-
     isTrending: true,
-
     rating: 4.9,
-
     ticketsLeft: 8,
-
     totalTickets: 300,
-
     ticketsSold: 292,
   },
 
   {
     id: 6,
-
     title: 'Eswatini International Trade Fair',
-
     description:
       'Largest trade exhibition showcasing local and international businesses',
-
     date: 'August 30 - September 9, 2025',
-
     location: 'Mavuso Trade Centre',
-
     image: '/images/bushfire.jpg',
-
     price: 10,
-
     category: 'Business',
-
     isPopular: true,
-
     rating: 4.3,
-
     ticketsLeft: 145,
-
     totalTickets: 5000,
-
     ticketsSold: 4855,
   },
 
   {
     id: 3,
-
     title: 'Swazi Rally',
-
     description:
       "Annual motorsport event featuring rally racing through Eswatini's landscapes",
-
     date: 'July 12-13, 2025',
-
     location: 'Various Locations',
-
     image: '/images/bushfire.jpg',
-
     price: 15,
-
     earlyBirdPrice: 10,
-
     earlyBirdCutoff: '2025-05-01',
-
     category: 'Sports',
-
     isTrending: false,
-
     rating: 4.6,
-
     ticketsLeft: 87,
-
     totalTickets: 1000,
-
     ticketsSold: 913,
   },
 
   {
     id: 1,
-
     title: 'Mbabane Jazz Festival',
-
     description:
       'Celebration of jazz music featuring local and international artists',
-
     date: 'October 18-20, 2025',
-
     location: 'Mbabane Theatre Club',
-
     image: '/images/bushfire.jpg',
-
     price: 30,
-
     earlyBirdPrice: 20,
-
     earlyBirdCutoff: '2025-08-01',
-
     category: 'Music',
-
     isPopular: true,
-
     rating: 4.5,
-
     ticketsLeft: 42,
-
     totalTickets: 500,
-
     ticketsSold: 458,
   },
 
   {
     id: 9,
-
     title: 'Hlane Moonlight Festival',
-
     description:
       'Nighttime wildlife viewing and cultural performances in Hlane National Park',
-
     date: 'June 14, 2025',
-
     location: 'Hlane Royal National Park',
-
     image: '/images/bushfire.jpg',
-
     price: 35,
-
     earlyBirdPrice: 25,
-
     earlyBirdCutoff: '2025-04-15',
-
     category: 'Nature',
-
     isTrending: true,
-
     rating: 4.7,
-
     ticketsLeft: 23,
-
     totalTickets: 200,
-
     ticketsSold: 177,
   },
 
   {
     id: 10,
-
     title: 'Mantenga Cultural Village Experience',
-
     description:
       'Daily showcase of Swazi culture, dance, and traditional lifestyle',
-
     date: 'Daily',
-
     location: 'Mantenga Falls',
-
     image: '/images/bushfire.jpg',
-
     price: 15,
-
     category: 'Cultural',
-
     isPopular: true,
-
     rating: 4.8,
-
     ticketsLeft: 0,
-
     totalTickets: 0,
-
     ticketsSold: 0,
   },
 
   {
     id: 11,
-
     title: 'Swazi Fashion Week',
-
     description:
       "Showcasing the best of Eswatini's fashion designers and models",
-
     date: 'November 7-9, 2025',
-
     location: 'Ezulwini Valley',
-
     image: '/images/bushfire.jpg',
-
     price: 40,
-
     earlyBirdPrice: 30,
-
     earlyBirdCutoff: '2025-09-01',
-
     category: 'Fashion',
-
     isTrending: false,
-
     rating: 4.4,
-
     ticketsLeft: 56,
-
     totalTickets: 300,
-
     ticketsSold: 244,
   },
 
   {
     id: 12,
-
     title: 'Ngwane Film Festival',
-
     description: 'Annual celebration of African cinema and storytelling',
-
     date: 'September 25-29, 2025',
-
     location: 'Manzini',
-
     image: '/images/bushfire.jpg',
-
     price: 20,
-
     earlyBirdPrice: 15,
-
     earlyBirdCutoff: '2025-07-01',
-
     category: 'Film',
-
     isTrending: true,
-
     rating: 4.6,
-
     ticketsLeft: 34,
-
     totalTickets: 500,
-
     ticketsSold: 466,
   },
 ];
 
 const bubbles = [
   { id: 1, size: 120, left: '10%', top: '20%', delay: 0.5 },
-
   { id: 2, size: 80, left: '30%', top: '40%', delay: 1 },
-
   { id: 3, size: 150, left: '70%', top: '30%', delay: 1.5 },
-
   { id: 4, size: 100, left: '85%', top: '60%', delay: 2 },
 ];
 
 const FeaturedEvents = () => {
   const ref = useRef<HTMLDivElement>(null);
-
   const [likedEvents, setLikedEvents] = useState<number[]>([]);
-
   const [currentPage, setCurrentPage] = useState(1);
-
   const eventsPerPage = 4;
-
   const controls = useAnimation();
-
   const { scrollYProgress } = useScroll({
     target: ref,
-
     offset: ['start end', 'end start'],
   });
 
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '10%']);
-
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.2]);
-
   const indexOfLastEvent = currentPage * eventsPerPage;
-
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-
   const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
-
   const totalPages = Math.ceil(events.length / eventsPerPage);
-
   const isEarlyBirdAvailable = (event: (typeof events)[0]) => {
     return (
       event.earlyBirdCutoff && new Date() < new Date(event.earlyBirdCutoff)
@@ -497,27 +316,19 @@ const FeaturedEvents = () => {
             key={bubble.id}
             animate={{
               y: [0, -100],
-
               opacity: [0.5, 0],
-
               transition: {
                 duration: 15,
-
                 repeat: Infinity,
-
                 repeatType: 'reverse',
-
                 delay: bubble.delay,
               },
             }}
             className="absolute rounded-full bg-purple-500/10 dark:bg-pink-500/10"
             style={{
               width: `${bubble.size}px`,
-
               height: `${bubble.size}px`,
-
               left: bubble.left,
-
               top: bubble.top,
             }}
           />

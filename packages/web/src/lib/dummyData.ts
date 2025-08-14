@@ -24,6 +24,7 @@ export const dummyReports: Report[] = [
     },
     // Additional reports...
 ];
+
 export const dummyEvents: Event[] = [
     {
         id: '1',
@@ -88,7 +89,6 @@ export const dummyEvents: Event[] = [
         revenue: 30000000,    // Add this
 
     },
-    // Additional events...
 ];
 
 export const dummyTicketTypes: TicketTypeConfig[] = [
@@ -126,6 +126,7 @@ export const dummyTicketTypes: TicketTypeConfig[] = [
     },
     // Additional ticket types...
 ];
+
 export const dummyPromos: Promo[] = [
     {
         id: '1',
@@ -147,6 +148,7 @@ export const dummyPromos: Promo[] = [
     },
     // Additional promos...
 ];
+
 export const dummyVendors: Vendor[] = [
     {
         id: '1',
@@ -179,7 +181,7 @@ export const dummyVendors: Vendor[] = [
     },
     // Additional vendors...
 ];
-// Add to dummyData.ts (before the last export)
+
 export const dummyAnalytics: AnalyticsItem[] = [
     {
         id: 'analytics-1',
@@ -215,6 +217,7 @@ export const dummyAnalytics: AnalyticsItem[] = [
         }
     }
 ];
+
 export const dummyAttendees: { id: string; name: string; email: string; ticketId: string; checkedIn: boolean, eventId?: string; }[] = [
     {
         id: '1',
@@ -286,6 +289,7 @@ export const dummyRefunds: Refund[] = [
     },
     // Additional refunds...
 ];
+
 export const dummyUsers: User[] = [
     {
         id: '1',
@@ -363,3 +367,4 @@ export const dummyRolePermissions: RolePermission[] = [
         permission: 'MANAGE_BILLING',
     },
 ];
+

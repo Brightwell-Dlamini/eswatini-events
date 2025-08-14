@@ -2,15 +2,8 @@
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import {
-  FaChartLine,
-  FaTicketAlt,
-  FaUsers,
-  FaMoneyBillWave,
-  FaQrcode,
-  FaMobileAlt,
-} from 'react-icons/fa';
-import { GiCash, GiArtificialIntelligence } from 'react-icons/gi';
+import { FaMoneyBillWave } from 'react-icons/fa';
+import { GiCash } from 'react-icons/gi';
 import { IoMdCash } from 'react-icons/io';
 import OrganizerCTA from '@/components/organizer/OrginizerCTA';
 
@@ -35,9 +28,9 @@ const OrganizerLanding: React.FC = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-[#f8f9fa] to-white" ref={ref}>
+    <div className="bg-gradient-to-b from-[#274562] to-white" ref={ref}>
       {/* Hero Section with Parallax */}
-      <div className="relative h-screen overflow-hidden">
+      <div className="relative h-[55vh] overflow-hidden">
         <motion.div
           className="absolute inset-0 bg-[url('/images/eswatini-bg.jpg')] bg-cover bg-center"
           style={{
@@ -56,7 +49,7 @@ const OrganizerLanding: React.FC = () => {
             <div className="flex items-center justify-center mb-4">
               {/* <SiSwati className="text-4xl text-[#3a5ba0]" /> */}
               <span className="ml-2 text-lg font-semibold text-[#3a5ba0]">
-                ESWATINI'S EVENT REVOLUTION
+                ESWATINI&apos;S EVENT REVOLUTION
               </span>
             </div>
 
@@ -64,9 +57,9 @@ const OrganizerLanding: React.FC = () => {
               Reclaim Your Event Industry
             </h1>
 
-            <p className="text-xl md:text-2xl mb-8 text-gray-700">
+            <p className="text-xl md:text-2xl mb-8 text-gray-200">
               World-class ticketing with{' '}
-              <span className="font-semibold">5-8% fees</span> - half the cost
+              <span className="font-semibold">3-5% fees</span> - half the cost
               of foreign platforms
             </p>
 
@@ -83,7 +76,7 @@ const OrganizerLanding: React.FC = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <motion.div
@@ -92,7 +85,7 @@ const OrganizerLanding: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="p-6 bg-gradient-to-br from-[#3a5ba0]/10 to-[#f8c537]/10 rounded-xl"
             >
-              <div className="text-4xl font-bold text-[#3a5ba0]">5-8%</div>
+              <div className="text-4xl font-bold text-[#3a5ba0]">3-5%</div>
               <div className="text-gray-600">Ticketing Fees</div>
             </motion.div>
 
@@ -128,6 +121,7 @@ const OrganizerLanding: React.FC = () => {
           </div>
         </div>
       </div>
+
       <OrganizerCTA />
       {/* Payment Methods */}
       <div className="py-16 bg-white">
