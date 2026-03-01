@@ -262,14 +262,16 @@ APIRateLimit APIRateLimit[]
 model User {
 id String @id @default(auto()) @map("\_id") @db.ObjectId
 email String? @unique
+emailVerified DateTime?
 password String?
 phone String?
 countryCode String? @default("+268")
-name String?
+name String
 role UserRole
 biometricId String?
 biometricConsent Boolean? @default(false)
 socialId String?
+company String?
 provider String?
 language Language @default(ENGLISH)
 profilePhoto String?
@@ -285,7 +287,7 @@ canResellTickets Boolean @default(false)
 fraudScore Float? @default(0.0) // For automated risk assessment
 deviceTokens DeviceToken[]
 vendorApplicationReviews VendorApplication[] @relation("VendorReviewer")
-@@unique([role], name: "unique_super_admin", map: "unique_super_admin_constraint") // Ensures only one SUPER_ADMIN
+
 deviceVerifications DeviceVerification[]
 
 // Relations
@@ -403,10 +405,11 @@ following User @relation("Following", fields: [followingId], references: [id])
 
 @@unique([followerId, followingId])
 }
-
 model Session {
 id String @id @default(auto()) @map("\_id") @db.ObjectId
 token String @unique
+refreshToken String? @unique
+authMethod String?
 platform PlatformType?
 ipAddress String?
 userAgent String?
@@ -416,13 +419,13 @@ createdAt DateTime @default(now())
 deviceType String? // 'mobile', 'desktop', 'pwa'
 offlineData Json? // For PWA offline syncing
 location Json? // { city, country } from IP lookup
-
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 deviceTokenId String? @db.ObjectId
 deviceToken DeviceToken? @relation(fields: [deviceTokenId], references: [id])
 
 @@index([userId])
+
 }
 
 model DeviceToken {
@@ -2042,6 +2045,7 @@ fee Float @default(0.0)
 isOffline Boolean @default(false)
 syncStatus String? @default("SYNCED")
 createdAt DateTime @default(now())
+
 wristband Wristband @relation(fields: [wristbandId], references: [id], onDelete: Cascade)
 wristbandId String @db.ObjectId
 payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
@@ -2057,6 +2061,7 @@ paymentId String @db.ObjectId
 model AuditLog {
 id String @id @default(auto()) @map("\_id") @db.ObjectId
 action String // Added ticket purchases, failed logins
+details String?
 entityType String
 entityId String?
 metadata Json?
@@ -2068,6 +2073,7 @@ createdAt DateTime @default(now())
 user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 userId String? @db.ObjectId
 actionType String? // e.g., "ORGANIZER_APPROVED", "VENDOR_APPROVED", "GATE_OPERATOR_VERIFIED"
+
 @@index([createdAt])
 @@index([userId])
 @@index([entityType, entityId])
@@ -2083,6 +2089,7 @@ ipRestrictions String[] @default([])
 rateLimit Int @default(1000)
 createdAt DateTime @default(now())
 updatedAt DateTime @updatedAt
+
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 
@@ -2117,6 +2124,7 @@ isSynced Boolean @default(false)
 syncAttempts Int @default(0)
 createdAt DateTime @default(now())
 lastSyncAttempt DateTime?
+
 user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 userId String @db.ObjectId
 
@@ -2128,6 +2136,7 @@ id String @id @default(auto()) @map("\_id") @db.ObjectId
 data Json
 lastUpdated DateTime @default(now())
 expiresAt DateTime
+
 event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 eventId String @db.ObjectId
 deviceId String

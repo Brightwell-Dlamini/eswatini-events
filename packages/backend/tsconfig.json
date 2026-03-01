@@ -11,6 +11,6 @@
     "module": "commonjs",
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/lib/auth-service.ts"],
   "exclude": ["node_modules"]
 }

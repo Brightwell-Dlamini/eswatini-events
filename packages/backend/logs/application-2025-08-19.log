@@ -1,0 +1,8 @@
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-19T13:42:31.013Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-19T13:42:31.048Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-19T13:42:35.359Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-19T13:43:58.210Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-19T13:43:58.220Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-19T13:44:01.836Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-19T13:44:15.867Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-19T13:44:15.872Z"}

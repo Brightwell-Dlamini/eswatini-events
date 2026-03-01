@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Vendor } from '@/types/schema';
+import { Vendor } from '@/lib/types';
 
 interface VendorCardProps {
   vendor: Vendor;

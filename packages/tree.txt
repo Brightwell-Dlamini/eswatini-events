@@ -1,0 +1,254 @@
+.
+|-- backend
+|   |-- logs
+|   |   |-- application-2025-08-06.log
+|   |   |-- application-2025-08-07.log
+|   |   |-- application-2025-08-08.log
+|   |   `-- application-2025-08-19.log
+|   |-- package.json
+|   |-- prisma
+|   |   |-- schema.md
+|   |   `-- schema.prisma
+|   |-- src
+|   |   |-- __tests__
+|   |   |   |-- auth.test.ts
+|   |   |   |-- setup.ts
+|   |   |   |-- test-db.ts
+|   |   |   `-- test-setup.ts
+|   |   |-- index.ts
+|   |   |-- jest.config.ts
+|   |   |-- lib
+|   |   |   |-- db.ts
+|   |   |   |-- logger.ts
+|   |   |   `-- redis.ts
+|   |   |-- redis-test.ts
+|   |   `-- routes
+|   |       |-- analytics.ts
+|   |       |-- auth.google.ts
+|   |       |-- auth.ts
+|   |       |-- events.ts
+|   |       |-- payments.ts
+|   |       |-- ticket-types.ts
+|   |       |-- tickets.ts
+|   |       |-- users.ts
+|   |       `-- venues.ts
+|   `-- tsconfig.json
+|-- tree.txt
+`-- web
+    |-- README.md
+    |-- eslint.config.mjs
+    |-- next-env.d.ts
+    |-- next.config.ts
+    |-- package.json
+    |-- postcss.config.mjs
+    |-- public
+    |   |-- file.svg
+    |   |-- globe.svg
+    |   |-- images
+    |   |   |-- Mastercard-logo.svg
+    |   |   |-- artists
+    |   |   |   |-- busta.jpg
+    |   |   |   |-- default-artist.webp
+    |   |   |   |-- krtc.jpg
+    |   |   |   |-- nothando.jpg
+    |   |   |   |-- qibho.jpg
+    |   |   |   |-- sands.jpeg
+    |   |   |   |-- sjava.jpg
+    |   |   |   |-- velemseni.webp
+    |   |   |   `-- waffles.jpg
+    |   |   |-- backgound-pattern.jpg
+    |   |   |-- bushfire.jpg
+    |   |   |-- cash.png
+    |   |   |-- flag.png
+    |   |   |-- hero-1.jpg
+    |   |   |-- hero-3.jpg
+    |   |   |-- hero-4.jpg
+    |   |   |-- hero-5.jpg
+    |   |   |-- hero-6.jpg
+    |   |   |-- hero-bg-1.jpg
+    |   |   |-- hero-bg-2.jpg
+    |   |   |-- hero-bg-3.jpg
+    |   |   |-- logo.PNG
+    |   |   |-- mastercard.png
+    |   |   |-- momo.png
+    |   |   |-- pattern.jpg
+    |   |   |-- pattern1.jpg
+    |   |   |-- sidvokodvo.jpg
+    |   |   |-- team-ceo.jpeg
+    |   |   |-- umhlanga.jpg
+    |   |   `-- visa.png
+    |   |-- manifest.json
+    |   |-- next.svg
+    |   |-- sw.js
+    |   |-- vercel.svg
+    |   `-- window.svg
+    |-- src
+    |   |-- app
+    |   |   |-- about
+    |   |   |   `-- page.tsx
+    |   |   |-- auth
+    |   |   |   |-- forgot-password
+    |   |   |   |   `-- page.tsx
+    |   |   |   |-- google
+    |   |   |   |   `-- callback
+    |   |   |   |       `-- page.tsx
+    |   |   |   |-- login
+    |   |   |   |   `-- page.tsx
+    |   |   |   `-- register
+    |   |   |       `-- page.tsx
+    |   |   |-- contact
+    |   |   |   `-- page.tsx
+    |   |   |-- events
+    |   |   |   `-- page.tsx
+    |   |   |-- favicon.ico
+    |   |   |-- globals.css
+    |   |   |-- layout.tsx
+    |   |   |-- organizer
+    |   |   |   |-- analytics
+    |   |   |   |-- dashboard
+    |   |   |   |   `-- page.tsx
+    |   |   |   |-- events
+    |   |   |   |   `-- page.tsx
+    |   |   |   |-- layout.tsx
+    |   |   |   |-- login
+    |   |   |   |   `-- page.tsx
+    |   |   |   |-- marketing
+    |   |   |   |-- page.tsx
+    |   |   |   |-- register
+    |   |   |   |   `-- page.tsx
+    |   |   |   |-- settings
+    |   |   |   |   |-- page.tsx
+    |   |   |   |   `-- tickets
+    |   |   |   |       `-- page.tsx
+    |   |   |   |-- tickets
+    |   |   |   |   |-- [id]
+    |   |   |   |   |   `-- page.tsx
+    |   |   |   |   |-- create
+    |   |   |   |   `-- page.tsx
+    |   |   |   `-- vendors
+    |   |   |       |-- create
+    |   |   |       `-- page.tsx
+    |   |   |-- page.tsx
+    |   |   |-- profile
+    |   |   |   `-- page.tsx
+    |   |   `-- providers.tsx
+    |   |-- components
+    |   |   |-- auth
+    |   |   |   |-- AuthError.tsx
+    |   |   |   |-- AuthLayout.tsx
+    |   |   |   |-- GoogleButton.tsx
+    |   |   |   |-- LoginForm.tsx
+    |   |   |   |-- LoginIllustration.tsx
+    |   |   |   |-- PasswordStrengthMeter.tsx
+    |   |   |   |-- RegisterForm.tsx
+    |   |   |   |-- RegisterIllustration.tsx
+    |   |   |   `-- SuccessModal.tsx
+    |   |   |-- landing
+    |   |   |   |-- About
+    |   |   |   |   |-- CtaSection.tsx
+    |   |   |   |   |-- HeroSection.tsx
+    |   |   |   |   |-- OurStory.tsx
+    |   |   |   |   |-- StatsSection.tsx
+    |   |   |   |   |-- TeamSection.tsx
+    |   |   |   |   |-- TestimonialsSection.tsx
+    |   |   |   |   `-- ValuesSection.tsx
+    |   |   |   |-- AllEvents
+    |   |   |   |   |-- EventCard.tsx
+    |   |   |   |   |-- EventsPagination.tsx
+    |   |   |   |   |-- FeaturedEvents.tsx
+    |   |   |   |   `-- FeaturedEventsHeader.tsx
+    |   |   |   |-- Artist
+    |   |   |   |   `-- ArtistCard.tsx
+    |   |   |   |-- AuthHeader.tsx
+    |   |   |   |-- Categories_events.tsx
+    |   |   |   |-- Categories_landing.tsx
+    |   |   |   |-- ExperienceSection
+    |   |   |   |-- ExperienceSection.tsx
+    |   |   |   |-- FeaturedEvents.tsx
+    |   |   |   |-- Footer.tsx
+    |   |   |   |-- Hero
+    |   |   |   |   |-- BackgroundCarousel.tsx
+    |   |   |   |   |-- EventCard.tsx
+    |   |   |   |   |-- EventCarousel.tsx
+    |   |   |   |   |-- HeroText.tsx
+    |   |   |   |   |-- HeroTextSection.tsx
+    |   |   |   |   `-- ScrollIndicator.tsx
+    |   |   |   |-- Hero.tsx
+    |   |   |   |-- HowItWorks.tsx
+    |   |   |   |-- Navbar
+    |   |   |   |   |-- AuthButtons.tsx
+    |   |   |   |   |-- DropdownMenu.tsx
+    |   |   |   |   |-- LanguageSelector.tsx
+    |   |   |   |   |-- MobileMenu.tsx
+    |   |   |   |   |-- NavLinks.tsx
+    |   |   |   |   |-- NotificationMenu.tsx
+    |   |   |   |   |-- SearchBar.tsx
+    |   |   |   |   |-- ThemeToggle.tsx
+    |   |   |   |   `-- UserMenu.tsx
+    |   |   |   |-- Navbar.tsx
+    |   |   |   |-- OrganizerCTA.tsx
+    |   |   |   |-- TopArtistsSection.tsx
+    |   |   |   |-- UpcomingEvents
+    |   |   |   |   |-- EventCard.tsx
+    |   |   |   |   |-- PaginationControls.tsx
+    |   |   |   |   |-- SectionHeader.tsx
+    |   |   |   |   `-- TimeframeSelector.tsx
+    |   |   |   |-- UpcomingHighlights.tsx
+    |   |   |   `-- ero.tsx
+    |   |   |-- organizer
+    |   |   |   |-- AICopilotPanel.tsx
+    |   |   |   |-- BillingInfo.tsx
+    |   |   |   |-- EmailCampaignForm.tsx
+    |   |   |   |-- EventCard.tsx
+    |   |   |   |-- Navbar.tsx
+    |   |   |   |-- NotificationPrefs.tsx
+    |   |   |   |-- OrginizerCTA.tsx
+    |   |   |   |-- ProfileEditor.tsx
+    |   |   |   |-- PromoCodeForm.tsx
+    |   |   |   |-- TicketTypeCard.tsx
+    |   |   |   |-- ValuePropCard.tsx
+    |   |   |   `-- VendorCard.tsx
+    |   |   `-- ui
+    |   |       |-- EventCard.tsx
+    |   |       |-- badge.tsx
+    |   |       |-- button.tsx
+    |   |       |-- calendar.tsx
+    |   |       |-- command.tsx
+    |   |       |-- confetti.tsx
+    |   |       |-- date-range-picker.tsx
+    |   |       |-- dropdown.tsx
+    |   |       |-- input.tsx
+    |   |       |-- loading-spinner.tsx
+    |   |       |-- popover.tsx
+    |   |       |-- select.tsx
+    |   |       |-- skeleton.tsx
+    |   |       |-- spinner.tsx
+    |   |       |-- tabs.tsx
+    |   |       |-- tooltip.tsx
+    |   |       `-- wave-divider.tsx
+    |   |-- contexts
+    |   |   `-- auth-context.tsx
+    |   |-- hooks
+    |   |   |-- use-debounce.ts
+    |   |   |-- useAuth.ts
+    |   |   |-- useClickOutside.ts
+    |   |   |-- useDynamicPricing.ts
+    |   |   `-- useLoading.ts
+    |   |-- lib
+    |   |   |-- api.tsx
+    |   |   |-- constants.ts
+    |   |   |-- heroConstants.ts
+    |   |   |-- mockData.ts
+    |   |   |-- utils.ts
+    |   |   `-- validation.ts
+    |   |-- theme
+    |   |   |-- colors.ts
+    |   |   `-- styles.ts
+    |   |-- theme.ts
+    |   `-- types
+    |       `-- types.ts
+    |-- tailwind.config.js
+    |-- tree.txt
+    `-- tsconfig.json
+
+54 directories, 197 files

@@ -3,7 +3,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import { AuthProvider } from './contexts/auth-context';
+import { AuthProvider } from '@/contexts/auth-context';
 
 const queryClient = new QueryClient();
 

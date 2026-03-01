@@ -15,7 +15,7 @@ export const NotificationPrefs: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: {},
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {

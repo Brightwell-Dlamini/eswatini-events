@@ -24,9 +24,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { EventStatus, mockEvents } from '@/lib/mock-data';
 import { motion, AnimatePresence } from 'framer-motion';
-// import { Tooltip } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type FilterStatus = 'all' | EventStatus;
 type SortOption = 'date-asc' | 'date-desc' | 'title-asc' | 'title-desc';

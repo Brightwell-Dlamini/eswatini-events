@@ -20,9 +20,10 @@ import {
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/landing/Navbar';
+
 import Footer from '@/components/landing/Footer';
 import Categories_events from '@/components/landing/Categories_events';
+import Navbar from '@/components/landing/Navbar';
 
 interface Event {
   id: number;

@@ -11,7 +11,7 @@ import {
   FaCog,
   FaStore,
 } from 'react-icons/fa';
-import { MdDashboard, MdEvent } from 'react-icons/md';
+import { MdEvent, MdDashboard } from 'react-icons/md';
 
 const OrganizerNavbar = () => {
   const router = useRouter();

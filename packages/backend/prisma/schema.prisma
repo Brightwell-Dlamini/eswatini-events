@@ -263,14 +263,17 @@ model Tenant {
 model User {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   email            String?       @unique
+  emailVerified    DateTime?
+  lastProfileSync  DateTime?
   password         String?
   phone            String?
   countryCode      String?       @default("+268")
-  name             String?
+  name             String
   role             UserRole
   biometricId      String?
   biometricConsent Boolean?      @default(false)
   socialId         String?
+   company String?
   provider         String?
   language         Language      @default(ENGLISH)
   profilePhoto     String?
@@ -286,7 +289,7 @@ model User {
   fraudScore       Float?        @default(0.0) // For automated risk assessment
   deviceTokens     DeviceToken[]
    vendorApplicationReviews VendorApplication[] @relation("VendorReviewer")
-    @@unique([role], name: "unique_super_admin", map: "unique_super_admin_constraint") // Ensures only one SUPER_ADMIN
+  
 deviceVerifications DeviceVerification[]
 
   // Relations
@@ -404,10 +407,11 @@ model UserFollows {
 
   @@unique([followerId, followingId])
 }
-
 model Session {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   token       String        @unique
+  refreshToken String?      
+  authMethod   String?
   platform    PlatformType?
   ipAddress   String?
   userAgent   String?
@@ -417,13 +421,13 @@ model Session {
   deviceType  String? // 'mobile', 'desktop', 'pwa'
   offlineData Json? // For PWA offline syncing
   location    Json? // { city, country } from IP lookup
-
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String       @db.ObjectId
   deviceTokenId String?      @db.ObjectId
   deviceToken   DeviceToken? @relation(fields: [deviceTokenId], references: [id])
 
   @@index([userId])
+
 }
 
 model DeviceToken {
@@ -2057,6 +2061,7 @@ model TopUp {
 model AuditLog {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   action     String // Added ticket purchases, failed logins
+  details String?
   entityType String
   entityId   String?
   metadata   Json?

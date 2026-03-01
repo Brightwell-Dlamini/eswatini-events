@@ -16,8 +16,9 @@ import {
   LockClosedIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
-import Navbar from '@/components/landing/Navbar';
+
 import Footer from '@/components/landing/Footer';
+import Navbar from '@/components/landing/Navbar';
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -119,7 +120,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-
       <main>
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-16">
@@ -617,6 +617,20 @@ export default function Profile() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Security
                       </h3>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">
+                          Session Timeout
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          Your session will automatically expire after 30
+                          minutes of inactivity
+                        </p>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        30 minutes
+                      </span>
                     </div>
                     <div className="p-6 space-y-6">
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

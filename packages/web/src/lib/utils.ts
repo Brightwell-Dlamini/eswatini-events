@@ -1,3 +1,4 @@
+import { Event } from '@/lib/types';
 export function formatCurrency(amount: number, currency: string = 'SZL'): string {
     return new Intl.NumberFormat('en-SZ', {
         style: 'currency',
@@ -54,6 +55,49 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
-// lib/utils.ts
 
 
+export const calculateTimeLeft = (eventDate: string) => {
+    const difference = new Date(eventDate).getTime() - new Date().getTime();
+    if (difference <= 0) return 'Event passed';
+
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+
+    return `${days}d ${hours}h left`;
+};
+
+
+// Upcoming Events
+
+export const groupEventsByTimeframe = (
+    events: Event[],
+    timeframe: 'all' | 'week' | 'month'
+) => {
+    if (timeframe === 'all') return [...events];
+
+    const now = new Date();
+    const currentDate = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    return events.filter((event) => {
+        const eventDate = new Date(event.date);
+        const eventDay = eventDate.getDate();
+        const eventMonth = eventDate.getMonth();
+        const eventYear = eventDate.getFullYear();
+
+        if (timeframe === 'week') {
+            const daysDifference = Math.floor(
+                (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return daysDifference >= 0 && daysDifference <= 7;
+        } else {
+            return (
+                eventMonth === currentMonth &&
+                eventYear === currentYear &&
+                eventDay >= currentDate
+            );
+        }
+    });
+};

@@ -147,7 +147,7 @@ const HowItWorks = ({
       scale: 0.97,
     },
   };
-  //
+
   const particleVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -311,7 +311,6 @@ const HowItWorks = ({
                   }}
                   transition={{ duration: 0.4 }}
                 />
-
                 {/* Floating particles */}
                 <AnimatePresence>
                   {hoveredIndex === i && (
@@ -336,7 +335,6 @@ const HowItWorks = ({
                     </div>
                   )}
                 </AnimatePresence>
-
                 <div className="relative h-full">
                   <div className="relative z-10">
                     <motion.div
@@ -345,19 +343,15 @@ const HowItWorks = ({
                     >
                       {step.icon}
                     </motion.div>
-
                     <div className="absolute top-0 right-0 text-8xl font-bold text-gray-100 dark:text-gray-700/30 -z-10">
                       0{step.order}
                     </div>
-
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                       {step.title}
                     </h3>
-
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
                       {step.description}
                     </p>
-
                     <motion.div
                       className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 group/button"
                       whileHover={{ x: 5 }}

@@ -1,0 +1,48 @@
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-31T04:49:54.470Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-31T04:49:54.489Z"}
+{"level":"info","message":"Registering user: attendee1@eswatinievents.com","timestamp":"2025-08-31T04:49:54.577Z"}
+{"clientVersion":"6.14.0","code":"P2002","level":"error","message":"Registration error: \nInvalid `prisma.user.create()` invocation in\nD:\\eswatini-events\\packages\\backend\\src\\routes\\auth.ts:157:36\n\n  154   return res.status(400).json({ error: 'Email or phone already exists' });\n  155 }\n  156 \n→ 157 const user = await prisma.user.create(\nUnique constraint failed on the constraint: `unique_super_admin_constraint`","meta":{"modelName":"User","target":"unique_super_admin_constraint"},"name":"PrismaClientKnownRequestError","stack":"PrismaClientKnownRequestError: \nInvalid `prisma.user.create()` invocation in\nD:\\eswatini-events\\packages\\backend\\src\\routes\\auth.ts:157:36\n\n  154   return res.status(400).json({ error: 'Email or phone already exists' });\n  155 }\n  156 \n→ 157 const user = await prisma.user.create(\nUnique constraint failed on the constraint: `unique_super_admin_constraint`\n    at ei.handleRequestError (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:228:13)\n    at ei.handleAndLogRequestError (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:174:12)\n    at ei.request (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:143:12)","timestamp":"2025-08-31T04:49:56.345Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-31T04:52:29.459Z"}
+{"level":"info","message":"Initiating Google OAuth flow with state: 5irydxukhv4","timestamp":"2025-08-31T04:52:29.465Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-31T04:53:03.645Z"}
+{"level":"info","message":"Initiating Google OAuth flow with state: vpuw1d5mj5","timestamp":"2025-08-31T04:53:03.650Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T04:53:21.175Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T04:53:21.182Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/register"},"timestamp":"2025-08-31T05:26:05.768Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/register"},"timestamp":"2025-08-31T05:26:05.784Z"}
+{"level":"info","message":"Registering user: attendee1@eswatinievents.com","timestamp":"2025-08-31T05:26:05.840Z"}
+{"level":"info","message":"User registered: 68b3dceee5f3267d673390ca","timestamp":"2025-08-31T05:26:07.320Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-31T05:26:48.620Z"}
+{"level":"info","message":"Initiating Google OAuth flow with state: 2u4zmuc99as","timestamp":"2025-08-31T05:26:48.624Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-31T05:27:04.291Z"}
+{"level":"info","message":"Initiating Google OAuth flow with state: ez42qtuqvpt","timestamp":"2025-08-31T05:27:04.295Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:28:02.432Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:28:02.438Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:28:18.735Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:28:18.741Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:28:51.535Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:28:51.600Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:28:51.617Z"}
+{"clientVersion":"6.14.0","code":"P2002","level":"error","message":"Login error: \nInvalid `prisma.session.create()` invocation in\nD:\\eswatini-events\\packages\\backend\\src\\routes\\auth.ts:248:26\n\n  245   issuer: 'Eswatini Events'\n  246 });\n  247 \n→ 248 await prisma.session.create(\nUnique constraint failed on the constraint: `Session_token_key`","meta":{"modelName":"Session","target":"Session_token_key"},"name":"PrismaClientKnownRequestError","stack":"PrismaClientKnownRequestError: \nInvalid `prisma.session.create()` invocation in\nD:\\eswatini-events\\packages\\backend\\src\\routes\\auth.ts:248:26\n\n  245   issuer: 'Eswatini Events'\n  246 });\n  247 \n→ 248 await prisma.session.create(\nUnique constraint failed on the constraint: `Session_token_key`\n    at ei.handleRequestError (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:228:13)\n    at ei.handleAndLogRequestError (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:174:12)\n    at ei.request (D:\\eswatini-events\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:143:12)","timestamp":"2025-08-31T05:28:52.618Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:30:05.770Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:30:05.778Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:30:05.780Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:30:17.319Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:30:17.326Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:30:17.329Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:30:23.107Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:30:23.113Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:30:23.116Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:30:28.702Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:30:28.706Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:30:28.708Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:38:09.095Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:38:09.099Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:38:09.100Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"OPTIONS","url":"/auth/login"},"timestamp":"2025-08-31T05:38:29.769Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:38:29.776Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:38:29.779Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"POST","url":"/auth/login"},"timestamp":"2025-08-31T05:38:31.034Z"}
+{"level":"warn","message":"Rate limit exceeded for IP: ::ffff:127.0.0.1","timestamp":"2025-08-31T05:38:31.037Z"}
+{"level":"info","message":{"ip":"::ffff:127.0.0.1","method":"GET","url":"/auth/google"},"timestamp":"2025-08-31T05:50:33.465Z"}
+{"level":"info","message":"Initiating Google OAuth flow with state: caakrdiyv6p","timestamp":"2025-08-31T05:50:33.484Z"}

@@ -2,7 +2,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ProfileEditor } from '@/components/organizer/ProfileEditor';
 import { NotificationPrefs } from '@/components/organizer/NotificationPrefs';
@@ -20,11 +19,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const SettingsPage: React.FC = () => {
-  const router = useRouter();
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    formState: {},
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -34,12 +30,6 @@ const SettingsPage: React.FC = () => {
       language: 'ENGLISH',
     },
   });
-
-  const onSubmit = (data: FormData) => {
-    console.log('Updating settings:', data);
-    // Simulate API call
-    router.push('/organizer/dashboard');
-  };
 
   return (
     <motion.div

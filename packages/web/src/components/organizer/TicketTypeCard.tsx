@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { TicketTypeConfig } from '@/types/schema';
+import { TicketTypeConfig } from '@/lib/types';
 import { useDynamicPricing } from '@/hooks/useDynamicPricing';
 
 interface TicketTypeCardProps {

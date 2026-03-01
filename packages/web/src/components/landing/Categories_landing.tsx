@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { SubtleDivider } from '../ui/wave-divider';
+import FloatingParticles from '../ui/confetti';
 
 interface Category {
   id: string;
@@ -30,7 +31,7 @@ interface CategoriesProps {
   onCategoryChange?: (categoryId: string) => void;
 }
 
-const defaultCategories: Category[] = [
+export const defaultCategories: Category[] = [
   { id: 'all', name: 'All', icon: <FaList size={24} />, slug: 'all' },
   {
     id: 'concerts',
@@ -155,40 +156,8 @@ const Categories_landing = ({
         <div className="absolute inset-0 -z-10 overflow-hidden">
           {/* Gradient Mesh */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-50/30 via-transparent to-pink-50/30 dark:from-purple-900/20 dark:via-gray-900/90 dark:to-pink-900/20"></div>
-
-          {/* Subtle Floating Particles */}
-          {[...Array(15)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full bg-purple-300/30 dark:bg-purple-600/20"
-              initial={{
-                x: Math.random() * 100,
-                y: Math.random() * 100,
-                opacity: 0,
-                scale: 0,
-              }}
-              animate={{
-                x: [null, Math.random() * 100 - 50],
-                y: [null, Math.random() * 100 - 50],
-                opacity: [0, 0.4, 0],
-                scale: [0, Math.random() * 0.5 + 0.5, 0],
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                repeatType: 'reverse',
-                ease: 'easeInOut',
-              }}
-              style={{
-                width: `${Math.random() * 10 + 5}px`,
-                height: `${Math.random() * 10 + 5}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-            />
-          ))}
         </div>
-
+        <FloatingParticles />
         {/* Frosted Glass Overlay */}
         <div className="absolute inset-0 -z-10 backdrop-blur-[1px] bg-white/30 dark:bg-gray-900/50"></div>
         {/* Navigation Arrows - Modern Floating Style */}

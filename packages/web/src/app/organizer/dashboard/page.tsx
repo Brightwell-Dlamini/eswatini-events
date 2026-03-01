@@ -23,12 +23,13 @@ import {
   Area,
 } from 'recharts';
 
-import EventCard from '@/components/organizer/EventCard';
 import { useTheme } from 'next-themes';
 import { MoonIcon, SunIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { PiMegaphoneLight } from 'react-icons/pi';
 import { useRouter } from 'next/navigation';
+import EventCard from '@/components/organizer/EventCard';
+import { Event } from '@/types/event';
 
 // Types
 type TimeRange = '7d' | '30d' | '90d' | '12m';
@@ -65,22 +66,28 @@ const salesData = [
 
 const upcomingEvents = [
   {
-    id: 1,
+    id: 1, // Must match interface type (string)
     title: 'Tech Conference 2023',
     date: '2023-11-15',
+    status: 'published' as const, // Ensures type is EventStatus
     attendees: 324,
     revenue: 12500,
+    ticketsSold: 150,
+    capacity: 500,
     image: '/event-tech.jpg',
   },
   {
     id: 2,
     title: 'Music Festival: Summer Edition with International Artists',
     date: '2023-12-05',
+    status: 'published' as const,
     attendees: 850,
     revenue: 42000,
+    ticketsSold: 400,
+    capacity: 1000,
     image: '/event-music.jpg',
   },
-];
+] satisfies Event[]; // Ensures type safety
 
 export default function OrganizerDashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
