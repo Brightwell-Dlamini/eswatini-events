@@ -1,16 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
 import Image from 'next/image';
-import {
-  CalendarIcon,
-  MapPinIcon,
-  MagnifyingGlassIcon as SearchIcon,
-} from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-import Footer from '@/components/landing/Footer';
-import Navbar from '@/components/landing/Navbar';
+import { CalendarIcon, MapPinIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import Shell from '@/components/site/Shell';
 import { api } from '@/lib/api';
 import { ApiEvent } from '@/lib/types';
 import { EVENT_TYPES } from '@/lib/constants';
@@ -19,176 +13,151 @@ export default function EventsPage() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const router = useRouter();
+  const [filter, setFilter] = useState('all');
+  const [q, setQ] = useState('');
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await api.getEvents();
-        setEvents(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load events');
-      } finally {
-        setLoading(false);
-      }
-    })();
+    api
+      .getEvents()
+      .then(setEvents)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const filtered = events.filter((event) => {
-    const matchesType =
-      activeFilter === 'all' || event.type === activeFilter;
-    const q = searchQuery.toLowerCase();
-    const matchesSearch =
-      !q ||
-      event.name.toLowerCase().includes(q) ||
-      (event.city ?? '').toLowerCase().includes(q) ||
-      (event.address ?? '').toLowerCase().includes(q);
-    return matchesType && matchesSearch;
+  const filtered = events.filter((e) => {
+    const matchType = filter === 'all' || e.type === filter;
+    const query = q.toLowerCase();
+    const matchQ =
+      !query ||
+      e.name.toLowerCase().includes(query) ||
+      (e.city || '').toLowerCase().includes(query) ||
+      (e.address || '').toLowerCase().includes(query);
+    return matchType && matchQ;
   });
 
-  const minPrice = (event: ApiEvent) => {
-    if (!event.ticketTypes || event.ticketTypes.length === 0) return null;
-    return Math.min(...event.ticketTypes.map((t) => t.currentPrice ?? t.price));
+  const minPrice = (e: ApiEvent) => {
+    if (!e.ticketTypes?.length) return null;
+    return Math.min(...e.ticketTypes.map((t) => t.currentPrice ?? t.price));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <Navbar />
-
-      <div className="relative bg-gradient-to-r from-purple-600 to-blue-600 pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold text-white mb-6"
-          >
-            Discover <span className="text-yellow-300">Eswatini&apos;s</span> Events
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="text-xl text-white/90 max-w-3xl mx-auto mb-10"
-          >
-            From cultural festivals to concerts — find your next experience
-          </motion.p>
-
-          <div className="relative max-w-2xl mx-auto">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
+    <Shell>
+      <div className="bg-gradient-to-b from-indigo-600 to-indigo-700 dark:from-indigo-900 dark:to-zinc-950">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white">Events</h1>
+          <p className="mt-2 text-indigo-100">Discover what’s on across Eswatini</p>
+          <div className="mt-6 relative max-w-xl">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-200" />
             <input
-              type="text"
-              placeholder="Search events or locations…"
-              className="w-full pl-10 pr-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name or city…"
+              className="w-full rounded-xl border-0 bg-white/15 backdrop-blur pl-10 pr-4 py-3 text-white placeholder:text-indigo-200 focus:ring-2 focus:ring-white/50 outline-none"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* Type filters */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <FilterChip
-            active={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
-            label="All"
-          />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 mb-8">
+          <Chip active={filter === 'all'} onClick={() => setFilter('all')} label="All" />
           {EVENT_TYPES.slice(0, 8).map((t) => (
-            <FilterChip
+            <Chip
               key={t.value}
-              active={activeFilter === t.value}
-              onClick={() => setActiveFilter(t.value)}
+              active={filter === t.value}
+              onClick={() => setFilter(t.value)}
               label={t.label}
             />
           ))}
         </div>
 
         {loading && (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-80 rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+            ))}
           </div>
         )}
 
         {error && (
-          <div className="text-center py-20 text-red-600">
-            {error}
-            <p className="text-sm text-gray-500 mt-2">
-              Ensure the backend is running at the configured API URL.
+          <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-8 text-center">
+            <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+            <p className="mt-2 text-sm text-red-600/70">
+              Is the API running? Set NEXT_PUBLIC_API_URL if needed.
             </p>
           </div>
         )}
 
         {!loading && !error && filtered.length === 0 && (
           <div className="text-center py-20">
-            <SearchIcon className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium">No events found</h3>
-            <p className="text-gray-500">Try adjusting your search or filters</p>
+            <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-zinc-300" />
+            <p className="mt-4 font-medium text-zinc-900 dark:text-white">No events found</p>
+            <p className="text-sm text-zinc-500">Try a different search or filter</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((event) => {
             const price = minPrice(event);
             return (
-              <motion.div
+              <Link
                 key={event.id}
-                whileHover={{ y: -4 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-                onClick={() => router.push(`/events/${event.id}`)}
+                href={`/events/${event.id}`}
+                className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden hover:shadow-xl transition"
               >
                 <div className="relative h-48">
                   <Image
                     src={event.imageUrl}
                     alt={event.name}
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-[1.03] transition duration-500"
                     unoptimized
+                    sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
                   />
-                  <span className="absolute top-3 left-3 bg-white/90 text-xs font-bold px-2 py-1 rounded-full text-purple-700">
+                  <span className="absolute top-3 left-3 rounded-full bg-white/95 dark:bg-zinc-900/90 text-[11px] font-bold uppercase px-2.5 py-1 text-indigo-700 dark:text-indigo-300">
                     {event.type}
                   </span>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-lg truncate">{event.name}</h3>
-                  <div className="flex items-center text-sm text-gray-500 mt-2">
-                    <CalendarIcon className="h-4 w-4 mr-1.5" />
-                    {new Date(event.startTime).toLocaleDateString('en-SZ', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                  <h2 className="font-semibold text-lg text-zinc-900 dark:text-white line-clamp-1">
+                    {event.name}
+                  </h2>
+                  <div className="mt-2 space-y-1 text-sm text-zinc-500">
+                    <p className="flex items-center gap-1.5">
+                      <CalendarIcon className="h-4 w-4" />
+                      {new Date(event.startTime).toLocaleDateString('en-SZ', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                    {(event.city || event.address) && (
+                      <p className="flex items-center gap-1.5">
+                        <MapPinIcon className="h-4 w-4" />
+                        <span className="truncate">{event.city || event.address}</span>
+                      </p>
+                    )}
                   </div>
-                  {(event.city || event.address) && (
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <MapPinIcon className="h-4 w-4 mr-1.5" />
-                      {event.city || event.address}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="font-semibold text-blue-600">
-                      {price != null ? `From E${price.toFixed(0)}` : 'Free'}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="font-bold text-zinc-900 dark:text-white">
+                      {price != null ? `From E${price.toFixed(0)}` : 'Tickets'}
                     </span>
-                    <span className="text-sm bg-indigo-600 text-white px-3 py-1 rounded-full">
-                      Get Tickets
+                    <span className="rounded-full bg-indigo-600 text-white text-xs font-semibold px-3 py-1">
+                      Get tickets
                     </span>
                   </div>
                 </div>
-              </motion.div>
+              </Link>
             );
           })}
         </div>
       </div>
-
-      <Footer />
-    </div>
+    </Shell>
   );
 }
 
-function FilterChip({
+function Chip({
   active,
   onClick,
   label,
@@ -199,11 +168,12 @@ function FilterChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+      className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
         active
-          ? 'bg-purple-600 text-white'
-          : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+          ? 'bg-indigo-600 text-white shadow-sm'
+          : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-indigo-300'
       }`}
     >
       {label}
