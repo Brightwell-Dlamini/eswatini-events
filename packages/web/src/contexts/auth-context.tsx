@@ -13,13 +13,14 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { User, AuthResponse } from '@/lib/types';
 import { LoginFormData, RegisterApiData } from '@/lib/validation';
+import { clearTokens } from '@/lib/auth-token';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
   login: (data: LoginFormData) => Promise<void>;
-  register: (data: RegisterApiData) => Promise<void>; // Changed this line
+  register: (data: RegisterApiData) => Promise<void>;
   logout: () => Promise<void>;
   handleGoogleAuth: (token: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -30,11 +31,10 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-const TOKEN_REFRESH_BUFFER = 5 * 60 * 1000; // 5 minutes before expiration
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+const TOKEN_REFRESH_BUFFER = 5 * 60 * 1000;
 const MAX_RETRY_ATTEMPTS = 3;
 
-// Custom error classes
 class AuthError extends Error {
   constructor(
     public code: string,
@@ -62,16 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionTimeout, setSessionTimeout] = useState<number | null>(null);
   const router = useRouter();
 
-  // Refs for timers to prevent memory leaks and re-renders
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const tokenRefreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
   const isAuthenticated = !!user;
-  // Secure storage with fallbacks
 
+  // Always write sessionStorage so pages using getAuthToken() work.
+  // Optionally also try cookie API routes if present.
   const setSecureItem = useCallback(async (key: string, value: string) => {
     try {
-      // Prefer server-side cookie storage
+      sessionStorage.setItem(key, value);
+    } catch {
+      console.warn('sessionStorage not available');
+    }
+    try {
       await fetch('/api/auth/set-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,40 +83,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
     } catch {
-      // Fallback to sessionStorage
-      try {
-        sessionStorage.setItem(key, value);
-      } catch {
-        console.warn('Storage not available, using memory storage');
-      }
+      // cookie route optional
     }
   }, []);
 
-  const getSecureItem = useCallback(
-    async (key: string): Promise<string | null> => {
-      try {
-        // Try to get from server-side first
-        const response = await fetch(`/api/auth/get-token?key=${key}`, {
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          return data.value;
-        }
-      } catch {
-        // Fallback to client-side storage
-        try {
-          return sessionStorage.getItem(key);
-        } catch {
-          return null;
-        }
+  const getSecureItem = useCallback(async (key: string): Promise<string | null> => {
+    try {
+      const fromSession = sessionStorage.getItem(key);
+      if (fromSession) return fromSession;
+    } catch {
+      // ignore
+    }
+    try {
+      const response = await fetch(`/api/auth/get-token?key=${key}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.value;
       }
-      return null;
-    },
-    []
-  );
+    } catch {
+      // ignore
+    }
+    return null;
+  }, []);
 
   const removeSecureItem = useCallback(async (key: string) => {
+    try {
+      sessionStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
     try {
       await fetch('/api/auth/remove-token', {
         method: 'POST',
@@ -121,11 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
     } catch {
-      try {
-        sessionStorage.removeItem(key);
-      } catch {
-        // Ignore errors
-      }
+      // ignore
     }
   }, []);
 
@@ -144,11 +141,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await removeSecureItem('authToken');
     await removeSecureItem('refreshToken');
     await removeSecureItem('tokenExpiry');
+    clearTokens();
     setUser(null);
     setSessionTimeout(null);
     clearTimers();
     retryCountRef.current = 0;
   }, [removeSecureItem, clearTimers]);
+
   const logout = useCallback(async () => {
     setLoading(true);
     try {
@@ -177,7 +176,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, router, logout]);
 
-  // Define refresh first with proper typing
   const refresh = useCallback(
     async (retryCount = 0): Promise<void> => {
       if (retryCount >= MAX_RETRY_ATTEMPTS) {
@@ -191,34 +189,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new AuthError('NO_REFRESH_TOKEN', 'No refresh token available');
         const response = await api.refreshToken(storedRefreshToken);
 
-        // Handle auth success directly here to avoid circular dependency
-        const { user, token, refreshToken, expiresIn } = response;
+        const { user, token, refreshToken, expiresIn = 3600 } = response;
         await setSecureItem('authToken', token);
         if (refreshToken) await setSecureItem('refreshToken', refreshToken);
-        await setSecureItem(
-          'tokenExpiry',
-          (Date.now() + expiresIn * 1000).toString()
-        );
+        await setSecureItem('tokenExpiry', (Date.now() + expiresIn * 1000).toString());
         setUser(user);
         resetInactivityTimer();
 
-        // Schedule token refresh
-        if (tokenRefreshTimerRef.current) {
-          clearTimeout(tokenRefreshTimerRef.current);
-        }
+        if (tokenRefreshTimerRef.current) clearTimeout(tokenRefreshTimerRef.current);
         const refreshTime = expiresIn * 1000 - TOKEN_REFRESH_BUFFER;
-        tokenRefreshTimerRef.current = setTimeout(() => {
-          refresh();
-        }, refreshTime);
+        tokenRefreshTimerRef.current = setTimeout(() => refresh(), refreshTime);
         retryCountRef.current = 0;
       } catch (error) {
         console.error('Token refresh failed:', error);
         if (error instanceof NetworkError && error.status >= 500) {
-          // Retry on server errors with exponential backoff
-          setTimeout(
-            () => refresh(retryCount + 1),
-            1000 * Math.pow(2, retryCount)
-          );
+          setTimeout(() => refresh(retryCount + 1), 1000 * Math.pow(2, retryCount));
         } else {
           await logout();
         }
@@ -226,50 +211,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     },
-
     [getSecureItem, setSecureItem, resetInactivityTimer, logout]
   );
 
-  // Now define handleAuthSuccess
   const handleAuthSuccess = useCallback(
     (response: AuthResponse) => {
-      const { user, token, refreshToken, expiresIn } = response;
+      const { user, token, refreshToken, expiresIn = 3600 } = response;
       setSecureItem('authToken', token);
       if (refreshToken) setSecureItem('refreshToken', refreshToken);
       setSecureItem('tokenExpiry', (Date.now() + expiresIn * 1000).toString());
       setUser(user);
       resetInactivityTimer();
 
-      // Schedule token refresh directly here instead of using scheduleTokenRefresh
-      if (tokenRefreshTimerRef.current) {
-        clearTimeout(tokenRefreshTimerRef.current);
-      }
+      if (tokenRefreshTimerRef.current) clearTimeout(tokenRefreshTimerRef.current);
       const refreshTime = expiresIn * 1000 - TOKEN_REFRESH_BUFFER;
-      tokenRefreshTimerRef.current = setTimeout(() => {
-        refresh();
-      }, refreshTime);
+      tokenRefreshTimerRef.current = setTimeout(() => refresh(), refreshTime);
       retryCountRef.current = 0;
     },
     [setSecureItem, resetInactivityTimer, refresh]
   );
 
-  // Event listeners for user activity
   useEffect(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-    const handleActivity = () => {
-      resetInactivityTimer();
-    };
-    events.forEach((event) => {
-      window.addEventListener(event, handleActivity);
-    });
-
+    const handleActivity = () => resetInactivityTimer();
+    events.forEach((event) => window.addEventListener(event, handleActivity));
     return () => {
-      events.forEach((event) => {
-        window.removeEventListener(event, handleActivity);
-      });
+      events.forEach((event) => window.removeEventListener(event, handleActivity));
       clearTimers();
     };
   }, [resetInactivityTimer, clearTimers]);
+
   const loadUser = useCallback(async () => {
     try {
       const storedToken = await getSecureItem('authToken');
@@ -280,16 +251,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetInactivityTimer();
         const expiresIn = (parseInt(tokenExpiry) - Date.now()) / 1000;
         if (expiresIn > TOKEN_REFRESH_BUFFER / 1000) {
-          // Schedule token refresh directly
-          if (tokenRefreshTimerRef.current) {
-            clearTimeout(tokenRefreshTimerRef.current);
-          }
-          const refreshTime = expiresIn * 1000 - TOKEN_REFRESH_BUFFER;
-          tokenRefreshTimerRef.current = setTimeout(() => {
-            refresh();
-          }, refreshTime);
+          if (tokenRefreshTimerRef.current) clearTimeout(tokenRefreshTimerRef.current);
+          tokenRefreshTimerRef.current = setTimeout(
+            () => refresh(),
+            expiresIn * 1000 - TOKEN_REFRESH_BUFFER
+          );
         } else {
           await refresh();
+        }
+      } else if (storedToken && !tokenExpiry) {
+        // Token present without expiry — try to use it
+        try {
+          const user = await api.getCurrentUser(storedToken);
+          setUser(user);
+          resetInactivityTimer();
+        } catch {
+          await clearAuthState();
         }
       } else {
         await clearAuthState();
@@ -305,12 +282,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadUser();
   }, [loadUser]);
+
   const login = async (data: LoginFormData) => {
     setLoading(true);
     try {
       const response = await api.login(data);
       handleAuthSuccess(response);
-      router.push('/profile');
+      const role = response.user.role;
+      if (role === 'ORGANIZER') router.push('/organizer/dashboard');
+      else if (role === 'GATE_OPERATOR') router.push('/scanner');
+      else router.push('/tickets');
     } catch (error) {
       throw new AuthError(
         'LOGIN_FAILED',
@@ -322,22 +303,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // In the register function, make sure to pass the role to the API
   const register = async (data: RegisterApiData) => {
     setLoading(true);
     try {
       const response = await api.register(data);
       handleAuthSuccess(response);
-
-      // Redirect based on role
       const redirectPath =
         data.role === 'ORGANIZER'
           ? '/organizer/dashboard'
-          : data.role === 'VENDOR'
-            ? '/vendor/dashboard'
-            : data.role === 'GATE_OPERATOR'
-              ? '/gate-operator/dashboard'
-              : '/profile';
+          : data.role === 'GATE_OPERATOR'
+            ? '/scanner'
+            : '/tickets';
       router.push(redirectPath);
     } catch (error) {
       throw new AuthError(
@@ -352,26 +328,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleGoogleAuth = async (token: string) => {
     try {
-      // Verify the token with your backend
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/verify`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token }),
-        }
-      );
-      if (!response.ok) {
-        throw new Error('Google authentication failed');
-      }
-      const data = await response.json();
-      // Store tokens and user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      setUser(data.user);
-      return data;
+      const response = await api.googleAuth(token);
+      handleAuthSuccess(response);
+      return response;
     } catch (error) {
       console.error('Google auth error:', error);
       throw error;
@@ -416,9 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       throw new AuthError(
         'RESEND_VERIFICATION_FAILED',
-        error instanceof Error
-          ? error.message
-          : 'Failed to resend verification',
+        error instanceof Error ? error.message : 'Failed to resend verification',
         error
       );
     } finally {
