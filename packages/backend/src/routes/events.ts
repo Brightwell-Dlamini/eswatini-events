@@ -43,7 +43,6 @@ router.post(
       const eventData = eventSchema.parse(req.body);
 
       const baseSlug = slugify(eventData.name, { lower: true, strict: true });
-      // Ensure unique slug
       let slug = baseSlug;
       let counter = 1;
       while (await prisma.event.findUnique({ where: { slug } })) {
@@ -132,40 +131,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single event (public — only published, or owner can see drafts)
-router.get('/:id', async (req, res) => {
-  try {
-    const event = await prisma.event.findFirst({
-      where: {
-        OR: [{ id: req.params.id }, { slug: req.params.id }],
-      },
-      include: {
-        organizer: {
-          select: { id: true, name: true, email: true },
-        },
-        venue: {
-          select: { name: true, address: true, amenities: true },
-        },
-        ticketTypes: {
-          where: { isActive: true, status: 'APPROVED' },
-        },
-      },
-    });
-
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
-    }
-
-    // Non-published events are only visible to the organizer (handled by frontend auth if needed)
-    // For public API we still return the data; frontend can decide what to show.
-
-    res.json(event);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
-});
-
-// Organizer's own events
+// IMPORTANT: static path must come BEFORE /:id
 router.get(
   '/organizer/mine',
   requireRole([UserRole.ORGANIZER]),
@@ -193,6 +159,36 @@ router.get(
     }
   }
 );
+
+// Get single event by id or slug
+router.get('/:id', async (req, res) => {
+  try {
+    const event = await prisma.event.findFirst({
+      where: {
+        OR: [{ id: req.params.id }, { slug: req.params.id }],
+      },
+      include: {
+        organizer: {
+          select: { id: true, name: true, email: true },
+        },
+        venue: {
+          select: { name: true, address: true, amenities: true },
+        },
+        ticketTypes: {
+          where: { isActive: true, status: 'APPROVED' },
+        },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
 
 // Update event (ORGANIZER only)
 router.put(
