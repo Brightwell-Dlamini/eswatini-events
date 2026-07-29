@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Shell from '@/components/site/Shell';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
 import { Ticket } from '@/lib/types';
 import { getAuthToken } from '@/lib/auth-token';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 export default function MyTicketsPage() {
   const { loading: authLoading, isAuthenticated } = useAuth();
@@ -14,7 +16,7 @@ export default function MyTicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedQr, setSelectedQr] = useState<string | null>(null);
+  const [qr, setQr] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -22,137 +24,129 @@ export default function MyTicketsPage() {
       router.push('/auth/login?redirect=/tickets');
       return;
     }
-
-    (async () => {
-      try {
-        const token = getAuthToken();
-        if (!token) throw new Error('Not authenticated');
-        const data = await api.getMyTickets(token);
-        setTickets(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load tickets');
-      } finally {
-        setLoading(false);
-      }
-    })();
+    const token = getAuthToken();
+    if (!token) {
+      setError('Not authenticated');
+      setLoading(false);
+      return;
+    }
+    api
+      .getMyTickets(token)
+      .then(setTickets)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+      .finally(() => setLoading(false));
   }, [authLoading, isAuthenticated, router]);
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-      </div>
+      <Shell>
+        <div className="flex justify-center py-32">
+          <div className="h-10 w-10 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+        </div>
+      </Shell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">My Tickets</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Present the QR code at the gate for entry.
-        </p>
+    <Shell>
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14">
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">My tickets</h1>
+        <p className="mt-1 text-zinc-500">Show the QR code at the entrance.</p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="mt-6 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-4 py-3 text-sm text-red-700 dark:text-red-300">
             {error}
           </div>
         )}
 
-        {tickets.length === 0 && !error && (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow">
-            <p className="text-gray-500 mb-4">You have no tickets yet.</p>
-            <a
+        {!error && tickets.length === 0 && (
+          <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-12 text-center">
+            <p className="text-zinc-500">No tickets yet.</p>
+            <Link
               href="/events"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              className="mt-4 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white"
             >
-              Browse Events
-            </a>
+              Browse events
+            </Link>
           </div>
         )}
 
-        <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex flex-col sm:flex-row gap-4 items-start"
+        <ul className="mt-8 space-y-4">
+          {tickets.map((t) => (
+            <li
+              key={t.id}
+              className="flex flex-col sm:flex-row gap-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-5"
             >
-              {ticket.event?.imageUrl && (
-                <div className="relative w-full sm:w-28 h-28 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image
-                    src={ticket.event.imageUrl}
-                    alt={ticket.event.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
+              {t.event?.imageUrl && (
+                <div className="relative h-24 w-full sm:w-28 rounded-xl overflow-hidden shrink-0">
+                  <Image src={t.event.imageUrl} alt="" fill className="object-cover" unoptimized />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h2 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
-                  {ticket.event?.name ?? 'Event'}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {ticket.ticketType?.name} · E{ticket.price.toFixed(2)}
+                <p className="font-semibold text-zinc-900 dark:text-white truncate">
+                  {t.event?.name ?? 'Event'}
                 </p>
-                {ticket.event?.startTime && (
-                  <p className="text-sm text-gray-500">
-                    {new Date(ticket.event.startTime).toLocaleString('en-SZ', {
+                <p className="text-sm text-zinc-500">
+                  {t.ticketType?.name} · E{t.price.toFixed(2)}
+                </p>
+                {t.event?.startTime && (
+                  <p className="text-sm text-zinc-500">
+                    {new Date(t.event.startTime).toLocaleString('en-SZ', {
                       dateStyle: 'medium',
                       timeStyle: 'short',
                     })}
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1 font-mono">{ticket.ticketNumber}</p>
+                <p className="mt-1 font-mono text-xs text-zinc-400">{t.ticketNumber}</p>
                 <span
-                  className={`inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full ${
-                    ticket.status === 'VALID'
-                      ? 'bg-green-100 text-green-800'
-                      : ticket.status === 'SCANNED'
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-yellow-100 text-yellow-800'
+                  className={`mt-2 inline-block text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
+                    t.status === 'VALID'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                      : t.status === 'SCANNED'
+                        ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                        : 'bg-amber-100 text-amber-800'
                   }`}
                 >
-                  {ticket.status}
+                  {t.status}
                 </span>
               </div>
-              {ticket.qrCode && ticket.status === 'VALID' && (
+              {t.qrCode && t.status === 'VALID' && (
                 <button
-                  onClick={() => setSelectedQr(ticket.qrCode)}
-                  className="flex-shrink-0 border rounded-lg p-1 hover:ring-2 ring-blue-500 transition"
-                  title="Show QR code"
+                  type="button"
+                  onClick={() => setQr(t.qrCode)}
+                  className="self-center shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-700 p-1 hover:ring-2 ring-indigo-500 transition"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={ticket.qrCode} alt="QR" width={80} height={80} />
+                  <img src={t.qrCode} alt="QR" width={72} height={72} className="rounded-lg" />
                 </button>
               )}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
-      {selectedQr && (
+      {qr && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedQr(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setQr(null)}
         >
           <div
-            className="bg-white rounded-2xl p-8 max-w-sm w-full text-center"
+            className="w-full max-w-xs rounded-2xl bg-white p-6 text-center shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-bold text-lg mb-4">Entry QR Code</h3>
+            <p className="font-semibold text-zinc-900 mb-4">Entry QR</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={selectedQr} alt="Ticket QR" className="mx-auto w-64 h-64" />
-            <p className="text-sm text-gray-500 mt-4">Show this at the gate</p>
+            <img src={qr} alt="Ticket QR" className="mx-auto w-56 h-56" />
             <button
-              onClick={() => setSelectedQr(null)}
-              className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              type="button"
+              onClick={() => setQr(null)}
+              className="mt-6 w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white"
             >
               Close
             </button>
           </div>
         </div>
       )}
-    </div>
+    </Shell>
   );
 }
