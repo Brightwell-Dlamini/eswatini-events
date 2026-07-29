@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Shell from '@/components/site/Shell';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
 import { getAuthToken } from '@/lib/auth-token';
@@ -10,7 +11,8 @@ import { EVENT_TYPES, TICKET_TYPES } from '@/lib/constants';
 export default function CreateEventPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
-
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -22,59 +24,25 @@ export default function CreateEventPage() {
     imageUrl: 'https://images.unsplash.com/photo-1459749411175-047417675d1b?w=800',
     capacity: '',
   });
-
   const [ticketTypes, setTicketTypes] = useState([
     { name: 'General Admission', type: 'GENERAL_ADMISSION', price: '150', quantity: '500' },
   ]);
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || user?.role !== 'ORGANIZER') {
+  if (!authLoading && (!isAuthenticated || user?.role !== 'ORGANIZER')) {
     router.push('/auth/login?redirect=/organizer/events/new');
-    return null;
   }
 
-  const update = (field: string, value: string) =>
-    setForm((f) => ({ ...f, [field]: value }));
+  const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const updateTicket = (index: number, field: string, value: string) => {
-    setTicketTypes((tts) =>
-      tts.map((tt, i) => (i === index ? { ...tt, [field]: value } : tt))
-    );
-  };
-
-  const addTicketType = () => {
-    setTicketTypes((tts) => [
-      ...tts,
-      { name: '', type: 'GENERAL_ADMISSION', price: '', quantity: '' },
-    ]);
-  };
-
-  const removeTicketType = (index: number) => {
-    setTicketTypes((tts) => tts.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (publish: boolean) => {
+  const submit = async (publish: boolean) => {
     setSubmitting(true);
     setError(null);
-
     try {
       const token = getAuthToken();
       if (!token) throw new Error('Not authenticated');
-
       if (!form.name || !form.description || !form.startTime || !form.address || !form.city) {
-        throw new Error('Please fill in all required fields');
+        throw new Error('Fill in all required fields');
       }
-
       const event = await api.createEvent(token, {
         name: form.name,
         description: form.description,
@@ -88,8 +56,6 @@ export default function CreateEventPage() {
         capacity: form.capacity ? parseInt(form.capacity, 10) : undefined,
         status: 'DRAFT',
       });
-
-      // Create ticket types
       for (const tt of ticketTypes) {
         if (!tt.name || !tt.price) continue;
         await api.createTicketType(token, {
@@ -100,91 +66,67 @@ export default function CreateEventPage() {
           quantity: tt.quantity ? parseInt(tt.quantity, 10) : undefined,
         });
       }
-
-      if (publish) {
-        await api.publishEvent(token, event.id);
-      }
-
+      if (publish) await api.publishEvent(token, event.id);
       router.push('/organizer/events');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed');
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Create Event</h1>
+  if (authLoading) {
+    return (
+      <Shell>
+        <div className="flex justify-center py-32">
+          <div className="h-10 w-10 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+        </div>
+      </Shell>
+    );
+  }
 
+  return (
+    <Shell>
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <h1 className="text-3xl font-bold mb-8">Create event</h1>
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="mb-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 text-sm px-4 py-3">
             {error}
           </div>
         )}
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-5">
-          <Field label="Event Name *">
-            <input
-              className="input"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
-              placeholder="e.g. Bushfire Festival 2026"
-            />
-          </Field>
-
-          <Field label="Description *">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
+          <Input label="Name *" value={form.name} onChange={(v) => update('name', v)} />
+          <label className="block text-sm">
+            <span className="font-medium">Description *</span>
             <textarea
-              className="input min-h-[100px]"
+              className="mt-1 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm min-h-[100px]"
               value={form.description}
               onChange={(e) => update('description', e.target.value)}
-              placeholder="Tell attendees what to expect…"
             />
-          </Field>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Start Date & Time *">
-              <input
-                type="datetime-local"
-                className="input"
-                value={form.startTime}
-                onChange={(e) => update('startTime', e.target.value)}
-              />
-            </Field>
-            <Field label="End Date & Time">
-              <input
-                type="datetime-local"
-                className="input"
-                value={form.endTime}
-                onChange={(e) => update('endTime', e.target.value)}
-              />
-            </Field>
+          </label>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input
+              label="Start *"
+              type="datetime-local"
+              value={form.startTime}
+              onChange={(v) => update('startTime', v)}
+            />
+            <Input
+              label="End"
+              type="datetime-local"
+              value={form.endTime}
+              onChange={(v) => update('endTime', v)}
+            />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Address *">
-              <input
-                className="input"
-                value={form.address}
-                onChange={(e) => update('address', e.target.value)}
-                placeholder="Venue address"
-              />
-            </Field>
-            <Field label="City *">
-              <input
-                className="input"
-                value={form.city}
-                onChange={(e) => update('city', e.target.value)}
-                placeholder="e.g. Mbabane"
-              />
-            </Field>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input label="Address *" value={form.address} onChange={(v) => update('address', v)} />
+            <Input label="City *" value={form.city} onChange={(v) => update('city', v)} />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Event Type">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <label className="block text-sm">
+              <span className="font-medium">Type</span>
               <select
-                className="input"
+                className="mt-1 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"
                 value={form.type}
                 onChange={(e) => update('type', e.target.value)}
               >
@@ -194,55 +136,53 @@ export default function CreateEventPage() {
                   </option>
                 ))}
               </select>
-            </Field>
-            <Field label="Capacity">
-              <input
-                type="number"
-                className="input"
-                value={form.capacity}
-                onChange={(e) => update('capacity', e.target.value)}
-                placeholder="Optional"
-              />
-            </Field>
-          </div>
-
-          <Field label="Image URL">
-            <input
-              className="input"
-              value={form.imageUrl}
-              onChange={(e) => update('imageUrl', e.target.value)}
+            </label>
+            <Input
+              label="Capacity"
+              type="number"
+              value={form.capacity}
+              onChange={(v) => update('capacity', v)}
             />
-          </Field>
+          </div>
+          <Input label="Image URL" value={form.imageUrl} onChange={(v) => update('imageUrl', v)} />
 
-          {/* Ticket Types */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-lg">Ticket Types</h2>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="font-semibold">Ticket types</h2>
               <button
                 type="button"
-                onClick={addTicketType}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-indigo-600"
+                onClick={() =>
+                  setTicketTypes((t) => [
+                    ...t,
+                    { name: '', type: 'GENERAL_ADMISSION', price: '', quantity: '' },
+                  ])
+                }
               >
-                + Add type
+                + Add
               </button>
             </div>
-
-            <div className="space-y-3">
+            <div className="space-y-2">
               {ticketTypes.map((tt, i) => (
-                <div
-                  key={i}
-                  className="border rounded-lg p-3 grid grid-cols-2 sm:grid-cols-4 gap-2"
-                >
+                <div key={i} className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <input
-                    className="input col-span-2"
+                    className="col-span-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent px-2 py-1.5 text-sm"
                     placeholder="Name"
                     value={tt.name}
-                    onChange={(e) => updateTicket(i, 'name', e.target.value)}
+                    onChange={(e) =>
+                      setTicketTypes((arr) =>
+                        arr.map((x, j) => (j === i ? { ...x, name: e.target.value } : x))
+                      )
+                    }
                   />
                   <select
-                    className="input"
+                    className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent px-2 py-1.5 text-sm"
                     value={tt.type}
-                    onChange={(e) => updateTicket(i, 'type', e.target.value)}
+                    onChange={(e) =>
+                      setTicketTypes((arr) =>
+                        arr.map((x, j) => (j === i ? { ...x, type: e.target.value } : x))
+                      )
+                    }
                   >
                     {TICKET_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -250,89 +190,66 @@ export default function CreateEventPage() {
                       </option>
                     ))}
                   </select>
-                  <div className="flex gap-2">
-                    <input
-                      className="input"
-                      type="number"
-                      placeholder="Price (E)"
-                      value={tt.price}
-                      onChange={(e) => updateTicket(i, 'price', e.target.value)}
-                    />
-                    <input
-                      className="input"
-                      type="number"
-                      placeholder="Qty"
-                      value={tt.quantity}
-                      onChange={(e) => updateTicket(i, 'quantity', e.target.value)}
-                    />
-                  </div>
-                  {ticketTypes.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTicketType(i)}
-                      className="text-red-500 text-xs col-span-full text-right"
-                    >
-                      Remove
-                    </button>
-                  )}
+                  <input
+                    type="number"
+                    className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent px-2 py-1.5 text-sm"
+                    placeholder="Price"
+                    value={tt.price}
+                    onChange={(e) =>
+                      setTicketTypes((arr) =>
+                        arr.map((x, j) => (j === i ? { ...x, price: e.target.value } : x))
+                      )
+                    }
+                  />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               disabled={submitting}
-              onClick={() => handleSubmit(false)}
-              className="flex-1 py-3 rounded-lg border font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              onClick={() => submit(false)}
+              className="flex-1 rounded-xl border py-3 font-semibold text-sm disabled:opacity-50"
             >
-              Save as Draft
+              Save draft
             </button>
             <button
               type="button"
               disabled={submitting}
-              onClick={() => handleSubmit(true)}
-              className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50"
+              onClick={() => submit(true)}
+              className="flex-1 rounded-xl bg-indigo-600 text-white py-3 font-semibold text-sm hover:bg-indigo-500 disabled:opacity-50"
             >
-              {submitting ? 'Creating…' : 'Publish Event'}
+              {submitting ? 'Saving…' : 'Publish'}
             </button>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .input {
-          width: 100%;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          padding: 0.5rem 0.75rem;
-          background: transparent;
-          font-size: 0.875rem;
-        }
-        .input:focus {
-          outline: none;
-          ring: 2px;
-          border-color: #3b82f6;
-        }
-      `}</style>
-    </div>
+    </Shell>
   );
 }
 
-function Field({
+function Input({
   label,
-  children,
+  value,
+  onChange,
+  type = 'text',
 }: {
   label: string;
-  children: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
 }) {
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
-      {children}
-    </div>
+    <label className="block text-sm">
+      <span className="font-medium">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"
+      />
+    </label>
   );
 }

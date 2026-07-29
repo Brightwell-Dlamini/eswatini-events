@@ -1,130 +1,65 @@
 'use client';
+
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { EnvelopeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/auth-context';
-import AuthLayout from '@/components/auth/AuthLayout';
-import { AuthError } from '@/components/auth/AuthError';
+import Link from 'next/link';
+import Shell from '@/components/site/Shell';
 
-export default function ForgotPassword() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { resetPassword } = useAuth();
+  const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await resetPassword(email);
-      setSuccess(true);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Password reset failed');
-    } finally {
-      setLoading(false);
-    }
+    setSent(true);
   };
 
-  if (success) {
-    return (
-      <AuthLayout>
-        <div className="w-full md:w-1/2">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6"
-            >
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
-                <EnvelopeIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Check Your Email
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                We&apos;ve sent a password reset link to {email}. Please check
-                your inbox and follow the instructions.
-              </p>
-              <a
-                href="/auth/login"
-                className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline"
-              >
-                <ArrowLeftIcon className="w-4 h-4 mr-1" />
-                Back to Login
-              </a>
-            </motion.div>
-          </div>
-        </div>
-      </AuthLayout>
-    );
-  }
-
   return (
-    <AuthLayout>
-      <div className="w-full md:w-1/2">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <a
-            href="/auth/login"
-            className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline mb-6"
+    <Shell hideFooter>
+      <div className="mx-auto max-w-md px-4 py-16 sm:py-24">
+        <h1 className="text-2xl font-bold text-center text-zinc-900 dark:text-white">
+          Reset password
+        </h1>
+        <p className="mt-2 text-center text-sm text-zinc-500">
+          Enter your email and we’ll send reset instructions when the mail service is connected.
+        </p>
+
+        {sent ? (
+          <div className="mt-8 rounded-2xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 p-6 text-center text-sm">
+            If an account exists for <strong>{email}</strong>, you’ll receive an email shortly.
+            <Link href="/auth/login" className="mt-4 block font-semibold text-indigo-600">
+              Back to login
+            </Link>
+          </div>
+        ) : (
+          <form
+            onSubmit={onSubmit}
+            className="mt-8 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4"
           >
-            <ArrowLeftIcon className="w-4 h-4 mr-1" />
-            Back to Login
-          </a>
-
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Reset Password
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            Enter your email address and we&apos;ll send you a link to reset
-            your password.
-          </p>
-
-          {error && <AuthError error={error} />}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
+            <label className="block">
+              <span className="text-sm font-medium">Email</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </label>
+            <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 hover:bg-indigo-500"
             >
-              {loading ? (
-                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                'Send Reset Link'
-              )}
-            </motion.button>
+              Send reset link
+            </button>
           </form>
-        </div>
+        )}
+
+        <p className="mt-6 text-center text-sm">
+          <Link href="/auth/login" className="text-indigo-600 font-medium hover:underline">
+            ← Back to login
+          </Link>
+        </p>
       </div>
-    </AuthLayout>
+    </Shell>
   );
 }
