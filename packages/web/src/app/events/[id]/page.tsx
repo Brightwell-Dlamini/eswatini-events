@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ApiEvent, TicketTypeConfig, PaymentMethod } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
+import { getAuthToken } from '@/lib/auth-token';
 import Image from 'next/image';
 import { PAYMENT_METHODS } from '@/lib/constants';
 
@@ -18,7 +19,6 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Purchase state
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [method, setMethod] = useState<PaymentMethod>('MOMO');
   const [purchasing, setPurchasing] = useState(false);
@@ -69,7 +69,7 @@ export default function EventDetailPage() {
     setPurchaseError(null);
 
     try {
-      const token = sessionStorage.getItem('authToken');
+      const token = getAuthToken();
       if (!token) throw new Error('Not authenticated');
 
       const items = Object.entries(quantities)
@@ -135,7 +135,6 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero */}
       <div className="relative h-64 sm:h-80 w-full">
         <Image
           src={event.imageUrl}
@@ -162,7 +161,6 @@ export default function EventDetailPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Details */}
         <div className="lg:col-span-2 space-y-6">
           <section className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
             <h2 className="font-semibold text-lg mb-3">About</h2>
@@ -183,7 +181,6 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        {/* Purchase card */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow sticky top-6">
             <h2 className="font-semibold text-lg mb-4">Get Tickets</h2>
@@ -197,13 +194,13 @@ export default function EventDetailPage() {
                 const remaining =
                   tt.quantity != null ? tt.quantity - tt.sold : null;
                 const price = tt.currentPrice ?? tt.price;
-                const max = Math.min(
-                  tt.maxPerOrder ?? 10,
-                  remaining ?? 10
-                );
+                const max = Math.min(tt.maxPerOrder ?? 10, remaining ?? 10);
 
                 return (
-                  <div key={tt.id} className="border-b border-gray-100 dark:border-gray-700 pb-4">
+                  <div
+                    key={tt.id}
+                    className="border-b border-gray-100 dark:border-gray-700 pb-4"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">{tt.name}</p>

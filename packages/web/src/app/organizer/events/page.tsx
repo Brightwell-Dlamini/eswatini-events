@@ -1,428 +1,201 @@
-// app/organizer/events/page.tsx
 'use client';
-import {
-  FiCalendar,
-  FiPlus,
-  FiSearch,
-  FiDownload,
-  FiGrid,
-  FiList,
-  FiFilter,
-  FiX,
-} from 'react-icons/fi';
-import { useState, useDeferredValue, useTransition } from 'react';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import EventCard from '@/components/organizer/EventCard';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { EventStatus, mockEvents } from '@/lib/mock-data';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/auth-context';
+import { api } from '@/lib/api';
+import { ApiEvent } from '@/lib/types';
+import { getAuthToken } from '@/lib/auth-token';
 
-type FilterStatus = 'all' | EventStatus;
-type SortOption = 'date-asc' | 'date-desc' | 'title-asc' | 'title-desc';
+export default function OrganizerEventsPage() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-export default function EventsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const deferredQuery = useDeferredValue(searchQuery);
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('date-desc');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  const filteredEvents = mockEvents
-    .filter((event) => {
-      const matchesSearch = event.title
-        .toLowerCase()
-        .includes(deferredQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === 'all' || event.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      switch (sortOption) {
-        case 'date-asc':
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case 'date-desc':
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        case 'title-asc':
-          return a.title.localeCompare(b.title);
-        case 'title-desc':
-          return b.title.localeCompare(a.title);
-        default:
-          return 0;
-      }
-    });
-
-  const handleExport = () => {
-    // Mock export functionality
-    const blob = new Blob([JSON.stringify(filteredEvents, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `events-${new Date().toISOString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const load = async () => {
+    try {
+      const token = getAuthToken();
+      if (!token) throw new Error('Not authenticated');
+      const data = await api.getMyEvents(token);
+      setEvents(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load events');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const clearFilters = () => {
-    startTransition(() => {
-      setSearchQuery('');
-      setStatusFilter('all');
-      setSortOption('date-desc');
-    });
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated || user?.role !== 'ORGANIZER') {
+      router.push('/auth/login?redirect=/organizer/events');
+      return;
+    }
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated, user]);
+
+  const handlePublish = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const token = getAuthToken()!;
+      await api.publishEvent(token, id);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Publish failed');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const hasFilters =
-    searchQuery || statusFilter !== 'all' || sortOption !== 'date-desc';
+  const handleUnpublish = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const token = getAuthToken()!;
+      await api.unpublishEvent(token, id);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Unpublish failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Archive this event?')) return;
+    setActionLoading(id);
+    try {
+      const token = getAuthToken()!;
+      await api.deleteEvent(token, id);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Delete failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container py-8 mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="relative mb-10"
-      >
-        {/* Background accent */}
-        <div className="absolute inset-x-0 -top-6 -bottom-6 -z-10 rounded-2xl bg-gradient-to-r from-indigo-50/30 to-purple-50/30 dark:from-indigo-900/10 dark:to-purple-900/10" />
-
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          {/* Title section with animated underline */}
-          <div className="group relative max-w-2xl">
-            <div className="flex flex-wrap items-end gap-3">
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-                Event Dashboard
-              </h1>
-              <span className="mb-1.5 rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
-                {filteredEvents.length}{' '}
-                {filteredEvents.length === 1 ? 'Event' : 'Events'}
-              </span>
-            </div>
-            <div className="absolute -bottom-2 h-0.5 w-0 bg-indigo-500 transition-all duration-500 group-hover:w-full" />
-          </div>
-
-          {/* Action buttons with floating effect */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                asChild
-                className="relative overflow-hidden gap-2 px-5 py-3 text-white shadow-2xl hover:shadow-indigo-500/30"
-              >
-                <Link href="/organizer/events/new">
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-100 hover:from-indigo-700 hover:to-purple-700" />
-                  <FiPlus className="relative z-10 h-5 w-5" />
-                  <span className="relative z-10 font-semibold">New Event</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 transition-opacity hover:opacity-100" />
-                </Link>
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                disabled={filteredEvents.length === 0}
-                className="gap-2 px-5 py-3 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-              >
-                <FiDownload className="h-5 w-5" />
-                <span className="font-semibold">Export</span>
-                {filteredEvents.length === 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    !
-                  </span>
-                )}
-              </Button>
-            </motion.div>
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Events</h1>
+          <Link
+            href="/organizer/events/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
+          >
+            + New Event
+          </Link>
         </div>
 
-        {/* Filter status bar */}
-        {hasFilters && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 flex items-center gap-3"
-          >
-            <div className="flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 shadow-sm backdrop-blur-sm dark:bg-gray-800/80">
-              <FiFilter className="text-indigo-600 dark:text-indigo-400" />
-              <span className="text-sm font-medium">Active Filters</span>
-            </div>
-            <Badge
-              variant="outline"
-              onClick={clearFilters}
-              className="group cursor-pointer border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/30"
-            >
-              <div className="flex items-center gap-1.5">
-                <FiX className="h-3.5 w-3.5 text-indigo-600 transition-transform group-hover:rotate-90 dark:text-indigo-400" />
-                <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                  Clear All
-                </span>
-              </div>
-            </Badge>
-          </motion.div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
         )}
-      </motion.div>
 
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex flex-col gap-4 mb-8"
-      >
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search input remains the same */}
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Search events..."
-              className="pl-10 py-2 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                startTransition(() => {
-                  setSearchQuery(e.target.value);
-                });
-              }}
-              aria-label="Search events"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 md:hidden"
+        {events.length === 0 && !error && (
+          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow">
+            <p className="text-gray-500 mb-4">No events yet.</p>
+            <Link
+              href="/organizer/events/new"
+              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
             >
-              <FiFilter size={16} />
-              <span>Filters</span>
-            </Button>
-
-            <div className="hidden md:flex gap-3">
-              {/* Status Filter Select */}
-              <Select
-                value={statusFilter}
-                onValueChange={(value: FilterStatus) => setStatusFilter(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Drafts</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Sort Option Select */}
-              <Select
-                value={sortOption}
-                onValueChange={(value: SortOption) => setSortOption(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-desc">Newest first</SelectItem>
-                  <SelectItem value="date-asc">Oldest first</SelectItem>
-                  <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-                  <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-3 py-2 flex items-center gap-1 transition-all duration-300 ${
-                  viewMode === 'grid'
-                    ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-                aria-label="Grid view"
-              >
-                <FiGrid size={16} />
-                <span className="sr-only md:not-sr-only">Grid</span>
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-2 flex items-center gap-1 transition-all duration-300 ${
-                  viewMode === 'list'
-                    ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-                aria-label="List view"
-              >
-                <FiList size={16} />
-                <span className="sr-only md:not-sr-only">List</span>
-              </button>
-            </div>
+              Create your first event
+            </Link>
           </div>
-        </div>
+        )}
 
-        {/* Mobile filters */}
-        <AnimatePresence>
-          {isFilterOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden"
-            >
-              <div className="flex flex-col gap-3 pt-3">
-                <Select
-                  value={statusFilter}
-                  onValueChange={(value: FilterStatus) =>
-                    setStatusFilter(value)
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Events</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="draft">Drafts</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="canceled">Canceled</SelectItem>
-                  </SelectContent>
-                </Select>
+        <div className="space-y-4">
+          {events.map((event) => {
+            const sold =
+              event.ticketTypes?.reduce((s, t) => s + (t.sold || 0), 0) ?? 0;
+            return (
+              <div
+                key={event.id}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold text-lg truncate">{event.name}</h2>
+                    <StatusBadge status={event.status} />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {new Date(event.startTime).toLocaleString('en-SZ', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                    {event.city && ` · ${event.city}`}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-0.5">{sold} tickets sold</p>
+                </div>
 
-                <Select
-                  value={sortOption}
-                  onValueChange={(value: SortOption) => setSortOption(value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="date-desc">Newest first</SelectItem>
-                    <SelectItem value="date-asc">Oldest first</SelectItem>
-                    <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-                    <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/events/${event.id}`}
+                    className="text-sm px-3 py-1.5 rounded border hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    View
+                  </Link>
+                  {event.status !== 'PUBLISHED' && (
+                    <button
+                      disabled={actionLoading === event.id}
+                      onClick={() => handlePublish(event.id)}
+                      className="text-sm px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Publish
+                    </button>
+                  )}
+                  {event.status === 'PUBLISHED' && (
+                    <button
+                      disabled={actionLoading === event.id}
+                      onClick={() => handleUnpublish(event.id)}
+                      className="text-sm px-3 py-1.5 rounded border hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      Unpublish
+                    </button>
+                  )}
+                  <button
+                    disabled={actionLoading === event.id}
+                    onClick={() => handleDelete(event.id)}
+                    className="text-sm px-3 py-1.5 rounded text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    Archive
+                  </button>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Events Grid */}
-      {isPending ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-64 w-full rounded-xl" />
-          ))}
+            );
+          })}
         </div>
-      ) : filteredEvents.length > 0 ? (
-        viewMode === 'grid' ? (
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            <AnimatePresence>
-              {filteredEvents.map((event) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <EventCard event={event} variant="detailed" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        ) : (
-          <motion.div layout className="space-y-4">
-            <AnimatePresence>
-              {filteredEvents.map((event) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <EventCard event={event} variant="compact" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )
-      ) : (
-        <EmptyEventsState
-          searchQuery={deferredQuery}
-          statusFilter={statusFilter}
-        />
-      )}
+      </div>
     </div>
   );
 }
 
-function EmptyEventsState({
-  searchQuery,
-  statusFilter,
-}: {
-  searchQuery: string;
-  statusFilter: FilterStatus;
-}) {
-  const hasFilters = searchQuery || statusFilter !== 'all';
-
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    PUBLISHED: 'bg-green-100 text-green-800',
+    DRAFT: 'bg-gray-100 text-gray-600',
+    CANCELLED: 'bg-red-100 text-red-700',
+    PENDING: 'bg-yellow-100 text-yellow-800',
+  };
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-gray-50/50 to-white/50 dark:from-gray-900/50 dark:to-gray-800/50"
+    <span
+      className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors[status] || 'bg-gray-100 text-gray-600'}`}
     >
-      <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
-        <FiCalendar className="h-8 w-8" />
-      </div>
-      <h3 className="mt-5 text-xl font-semibold text-gray-900 dark:text-white">
-        {hasFilters ? 'No matching events found' : 'No events created yet'}
-      </h3>
-      <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-        {hasFilters
-          ? 'Try adjusting your search or filter criteria'
-          : 'Get started by creating your first event'}
-      </p>
-      <motion.div
-        className="mt-6"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Button
-          asChild
-          className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"
-        >
-          <Link href="/organizer/events/new">
-            <FiPlus size={18} />
-            Create New Event
-          </Link>
-        </Button>
-      </motion.div>
-    </motion.div>
+      {status}
+    </span>
   );
 }

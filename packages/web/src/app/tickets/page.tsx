@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
 import { Ticket } from '@/lib/types';
+import { getAuthToken } from '@/lib/auth-token';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 export default function MyTicketsPage() {
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ export default function MyTicketsPage() {
 
     (async () => {
       try {
-        const token = sessionStorage.getItem('authToken');
+        const token = getAuthToken();
         if (!token) throw new Error('Not authenticated');
         const data = await api.getMyTickets(token);
         setTickets(data);
@@ -130,7 +131,6 @@ export default function MyTicketsPage() {
         </div>
       </div>
 
-      {/* QR Modal */}
       {selectedQr && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
