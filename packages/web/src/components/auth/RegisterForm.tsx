@@ -14,15 +14,17 @@ import { AuthError } from './AuthError';
 import { registerText } from '@/lib/mockData';
 import { registerFormSchema, RegisterApiData } from '@/lib/validation';
 import { EyeIcon } from 'lucide-react';
-import { UserRole } from '@/lib/types';
 import { debounce } from 'lodash-es';
 import { ZodError, ZodIssue } from 'zod';
+
+/** Roles allowed on the public registration form (excludes SUPER_ADMIN). */
+type RegisterableRole = RegisterApiData['role'];
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterApiData) => Promise<void>;
   loading: boolean;
   error: string;
-  role: UserRole;
+  role: RegisterableRole;
 }
 
 function ErrorMessage({ id, message }: { id: string; message: string }) {
@@ -60,7 +62,7 @@ export function RegisterForm({
     phone: '',
     password: '',
     confirmPassword: '',
-    role: role,
+    role: role as RegisterableRole,
     termsAccepted: false,
     company: '',
   });
@@ -72,7 +74,7 @@ export function RegisterForm({
   const [submitError, setSubmitError] = useState('');
 
   // Role display names - simplified without useMemo
-  const roleDisplayNames = {
+  const roleDisplayNames: Record<RegisterableRole, string> = {
     ATTENDEE: 'Attendee',
     ORGANIZER: 'Event Organizer',
     VENDOR: 'Vendor',
@@ -192,14 +194,16 @@ export function RegisterForm({
     }
 
     try {
-      const apiData = {
+      const apiData: RegisterApiData = {
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone || undefined,
         password: formData.password,
         role: formData.role,
         termsAccepted: formData.termsAccepted,
-        ...(role === 'ORGANIZER' && { company: formData.company }),
+        ...(role === 'ORGANIZER' && formData.company
+          ? { company: formData.company }
+          : {}),
       };
 
       await onSubmit(apiData);
