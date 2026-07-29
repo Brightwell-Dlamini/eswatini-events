@@ -1,124 +1,190 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient, TicketStatus, UserRole } from '@prisma/client';
-import { z } from 'zod';
+import { TicketStatus, UserRole } from '@prisma/client';
 import { requireRole } from './auth';
-import QRCode from 'qrcode';
-import { v4 as uuidv4 } from 'uuid';
-import { redis, safeRedisGet } from '../lib/redis';
-import { io } from '../index'; import { prisma } from '../lib/db';
-
+import { z } from 'zod';
+import { prisma } from '../lib/db';
+import { safeRedisGet, safeRedisSetEx } from '../lib/redis';
+import { io } from '../index';
+import logger from '../lib/logger';
 
 const router = Router();
 
-const ticketSchema = z.object({
-    eventId: z.string(),
-    ticketTypeId: z.string().min(1),
-    price: z.number().positive()
-});
-
-// Create ticket (ORGANIZER only)
-router.post('/', requireRole([UserRole.ORGANIZER]), async (req: Request & { user?: { userId: string } }, res: Response) => {
+/**
+ * GET /tickets/my
+ * List tickets owned by the current user.
+ */
+router.get(
+  '/my',
+  requireRole([UserRole.ATTENDEE, UserRole.ORGANIZER, UserRole.GATE_OPERATOR]),
+  async (req: Request & { user?: { userId: string } }, res: Response) => {
     try {
-        const { eventId, ticketTypeId, price } = ticketSchema.parse(req.body);
-        const event = await prisma.event.findUnique({ where: { id: eventId } });
-        if (!event) return res.status(404).json({ error: 'Event not found' });
-        if (event.organizerId !== req.user!.userId) return res.status(403).json({ error: 'Not authorized' });
-
-        const ticketNumber = uuidv4();
-        const qrCode = await QRCode.toDataURL(ticketNumber);
-
-        const ticket = await prisma.ticket.create({
-            data: {
-                ticketNumber,
-                qrCode,
-                status: TicketStatus.PENDING,
-                eventId,
-                ticketTypeId,
-                price,
-                originalPrice: price
-            }
-        });
-        res.json(ticket);
-    } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
-    }
-});
-
-// List tickets for an event (public)
-router.get('/event/:eventId', async (req, res) => {
-    try {
-        const tickets = await prisma.ticket.findMany({
-            where: { eventId: req.params.eventId },
+      const tickets = await prisma.ticket.findMany({
+        where: { ownerId: req.user!.userId },
+        include: {
+          event: {
             select: {
-                id: true,
-                ticketNumber: true,
-                ticketType: { select: { name: true } },
-                price: true,
-                status: true
-            }
-        });
-        res.json(tickets);
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              address: true,
+              city: true,
+              imageUrl: true,
+            },
+          },
+          ticketType: {
+            select: { name: true, type: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json(tickets);
     } catch (error) {
-        res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
-});
+  }
+);
 
-// Purchase ticket (ATTENDEE only)
-router.post('/:id/purchase', requireRole([UserRole.ATTENDEE]), async (req: Request & { user?: { userId: string } }, res: Response) => {
+/**
+ * GET /tickets/event/:eventId
+ * Organizer view of tickets sold for an event.
+ */
+router.get(
+  '/event/:eventId',
+  requireRole([UserRole.ORGANIZER]),
+  async (req: Request & { user?: { userId: string } }, res: Response) => {
     try {
-        const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
-        if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-        if (ticket.status !== TicketStatus.PENDING) return res.status(400).json({ error: 'Ticket not available' });
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.eventId },
+        select: { organizerId: true },
+      });
+      if (!event || event.organizerId !== req.user!.userId) {
+        return res.status(403).json({ error: 'Not authorized' });
+      }
 
-        const updatedTicket = await prisma.ticket.update({
-            where: { id: req.params.id },
-            data: {
-                ownerId: req.user!.userId,
-                status: TicketStatus.VALID
-            }, include: { event: true }
-        });
-        await redis.setEx(`ticket:${ticket.ticketNumber}`, 3600 * 24, TicketStatus.VALID); // Cache for 24 hours
-        res.json(updatedTicket);
-        io.to(UserRole.ORGANIZER).emit('ticketPurchased', {
-            eventId: updatedTicket.eventId,
-            ticketId: updatedTicket.id,
-            ticketNumber: updatedTicket.ticketNumber
-        }); res.json(updatedTicket);
+      const tickets = await prisma.ticket.findMany({
+        where: { eventId: req.params.eventId },
+        select: {
+          id: true,
+          ticketNumber: true,
+          status: true,
+          price: true,
+          createdAt: true,
+          ticketType: { select: { name: true } },
+          owner: { select: { id: true, name: true, email: true, phone: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json(tickets);
     } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
-});
+  }
+);
 
-// Validate ticket (GATE_OPERATOR only)
-router.post('/:id/validate', requireRole([UserRole.GATE_OPERATOR]), async (req, res) => {
+/**
+ * POST /tickets/validate
+ * Gate operator validates a ticket by ticketNumber (from QR scan or manual entry).
+ * Idempotent: already-scanned tickets return a clear error.
+ */
+router.post(
+  '/validate',
+  requireRole([UserRole.GATE_OPERATOR, UserRole.ORGANIZER]),
+  async (req: Request & { user?: { userId: string; role: UserRole } }, res: Response) => {
     try {
-        const ticketNumber = req.body.ticketNumber;
-        const cachedStatus = await safeRedisGet(`ticket:${ticketNumber}`);
-        if (cachedStatus && cachedStatus !== TicketStatus.VALID) {
-            return res.status(400).json({ error: 'Ticket invalid or already scanned' });
-        }
+      const schema = z.object({
+        ticketNumber: z.string().min(1),
+        eventId: z.string().optional(), // optional extra check
+      });
+      const { ticketNumber, eventId } = schema.parse(req.body);
 
-        const ticket = await prisma.ticket.findUnique({ where: { ticketNumber } });
-        if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-        if (ticket.status !== TicketStatus.VALID) {
-            await redis.setEx(`ticket:${ticketNumber}`, 3600 * 24, ticket.status);
-            return res.status(400).json({ error: 'Ticket invalid or already scanned' });
-        }
+      // Fast path via Redis cache
+      const cached = await safeRedisGet(`ticket:${ticketNumber}`);
+      if (cached === TicketStatus.SCANNED) {
+        return res.status(400).json({ error: 'Ticket already scanned', status: 'SCANNED' });
+      }
+      if (cached && cached !== TicketStatus.VALID) {
+        return res.status(400).json({ error: `Ticket is ${cached}`, status: cached });
+      }
 
-        const updatedTicket = await prisma.ticket.update({
-            where: { ticketNumber },
-            data: { status: TicketStatus.SCANNED }
+      const ticket = await prisma.ticket.findUnique({
+        where: { ticketNumber },
+        include: {
+          event: { select: { id: true, name: true, startTime: true } },
+          ticketType: { select: { name: true } },
+          owner: { select: { name: true } },
+        },
+      });
+
+      if (!ticket) {
+        return res.status(404).json({ error: 'Ticket not found' });
+      }
+
+      if (eventId && ticket.eventId !== eventId) {
+        return res.status(400).json({ error: 'Ticket does not belong to this event' });
+      }
+
+      if (ticket.status === TicketStatus.SCANNED) {
+        await safeRedisSetEx(`ticket:${ticketNumber}`, 60 * 60 * 24 * 7, TicketStatus.SCANNED);
+        return res.status(400).json({ error: 'Ticket already scanned', status: 'SCANNED' });
+      }
+
+      if (ticket.status !== TicketStatus.VALID) {
+        await safeRedisSetEx(`ticket:${ticketNumber}`, 60 * 60 * 24 * 7, ticket.status);
+        return res.status(400).json({
+          error: `Ticket is not valid (current status: ${ticket.status})`,
+          status: ticket.status,
         });
-        await redis.setEx(`ticket:${ticketNumber}`, 3600 * 24, TicketStatus.SCANNED);
-        io.to(UserRole.GATE_OPERATOR).emit('ticketValidated', {
-            eventId: updatedTicket.eventId,
-            ticketId: updatedTicket.id,
-            ticketNumber: updatedTicket.ticketNumber
+      }
+
+      const updated = await prisma.ticket.update({
+        where: { ticketNumber },
+        data: { status: TicketStatus.SCANNED },
+      });
+
+      await safeRedisSetEx(`ticket:${ticketNumber}`, 60 * 60 * 24 * 7, TicketStatus.SCANNED);
+
+      // Record scan for audit
+      try {
+        await prisma.scan.create({
+          data: {
+            ticketId: ticket.id,
+            operatorId: req.user!.userId,
+            eventId: ticket.eventId,
+            isManual: false,
+            isOffline: false,
+          },
         });
-        res.json(updatedTicket);
+      } catch (scanErr) {
+        // Non-fatal — ticket is already marked scanned
+        logger.warn('Failed to create Scan record', scanErr);
+      }
+
+      io.to(UserRole.ORGANIZER).emit('ticketValidated', {
+        eventId: ticket.eventId,
+        ticketId: ticket.id,
+        ticketNumber: ticket.ticketNumber,
+      });
+
+      res.json({
+        message: 'Ticket validated successfully',
+        ticket: {
+          id: updated.id,
+          ticketNumber: updated.ticketNumber,
+          status: updated.status,
+          event: ticket.event,
+          ticketType: ticket.ticketType,
+          owner: ticket.owner,
+        },
+      });
     } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.issues });
+      }
+      logger.error('Validation error:', error);
+      res.status(400).json({ error: (error as Error).message });
     }
-});
+  }
+);
 
-export { router }; 
+export { router };
